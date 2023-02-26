@@ -9,6 +9,7 @@ The games in general was an inspiration to start programming, i used to took som
 - Flutter
 - MySQL/MariaDB
 - Linux
+- Java
 
 #
 - 🔭 I’m currently working on [malugos_project](https://github.com/LeandroTheDev/malugos_project)
