@@ -1,7 +1,7 @@
 ### Hi there 👋
 
 I have 20 years, learning flutter. 
-I'm looking for opportunities in programming, i intend to become a professional in flutter, after that i intend to go further trying to study server languages like node.js, JavaSciprt.
+I'm looking for opportunities in programming, i intend to become a professional in flutter, after that i intend to go further trying to study server languages like Node.js, JavaScript.
 
 
 The games in general was an inspiration to start programming, i used to took some source codes and modified by myself.
