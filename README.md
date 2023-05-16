@@ -15,7 +15,7 @@ The games in general was an inspiration to start programming, i used to took som
 - Node.js
 
 #
-- 🔭 I’m currently working on [flublade_project](https://github.com/LeandroTheDev/flublade_project) and [flublade_backend](https://github.com/LeandroTheDev/flublade_backend)
+- 🔭 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods)
 - 🌱 I’m currently learning Flutter, Node.js
 - 👯 I’m looking to collaborate on Backend or Frontend in Flutter or JavaScript/node.js
 #
