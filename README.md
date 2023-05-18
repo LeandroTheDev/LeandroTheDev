@@ -1,10 +1,12 @@
 ### Hi there 👋
 
 I have 20 years, learning flutter. 
-I'm looking for opportunities in programming, i intend to become a professional in flutter, after that i intend to go further trying to study server languages like Node.js, JavaScript.
+I'm looking for developer jobs.
 
 
-The games in general was an inspiration to start programming, i used to took some source codes and modified by myself.
+The games in general was an inspiration to start programming, i used to took some source codes and modified by myself before i really started in programation, now I'm focusing on studying the front end flutter, always keeping in mind the organization of the code.
+
+I am a person who tries to make the code as readable as possible, always leaving comments in the code sections.
 
 #
 ### Expecializations
