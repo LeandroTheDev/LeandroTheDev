@@ -18,7 +18,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 
 #
 - 🔭 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods)
-- 🌱 I’m currently learning Flutter, Node.js
+- 🌱 I’m currently learning Flutter, Node.js, React Native
 - 👯 I’m looking to collaborate on Backend or Frontend in Flutter or JavaScript/node.js
 #
 ## ✉ Contacts
