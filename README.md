@@ -1,6 +1,6 @@
 ### Personal Overview 💻
 
-I have 21 years, still learning the best languages like (Flutter, React, JavaScript).
+I have 21 years, starting learning Rust language.
 
 My professional idea is to be the full stack developer, trying to learn all sides of languages and softwares learning.
 
@@ -10,18 +10,20 @@ I am a person who tries to make the code as readable as possible, always leaving
 
 #
 ### Expecializations
-- Flutter
-- MySQL/MariaDB
-- Linux
-- JavaScript
-- Node.js
+- Flutter / Sênior
+- MySQL/MariaDB / Sênior
+- Linux / Sênior
+- JavaScript / Pleno
+- Node.js / Pleno
+- Rust / Junior
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
-- 📖 I’m currently learning Flutter, Node.js, React Native
-- 👯 I’m looking to collaborate on Backend or Frontend in Flutter/React or JavaScript/Node.js
+- 📖 I’m currently learning Rust Language
+- 👯 I’m looking to collaborate on Backend or Frontend in Flutter/React, JavaScript/Node.js, Rust.
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
+📠 Linkedin: [Leandro Schmidt Portugues/Brazil](https://www.linkedin.com/in/leandrothedev/)
 
 💬 Discord: BoboDev#5900
