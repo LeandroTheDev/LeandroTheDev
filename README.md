@@ -24,6 +24,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
+
 📠 Linkedin: [Leandro Schmidt Portugues/Brazil](https://www.linkedin.com/in/leandrothedev/)
 
 💬 Discord: BoboDev#5900
