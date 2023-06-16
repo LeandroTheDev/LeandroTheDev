@@ -22,7 +22,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
-- 📖 I’m currently learning Rust Language
+- 📖 I’m currently learning Rust Language / Cordova
 - 👯 I’m looking to collaborate on Backend or Frontend in Flutter/React, JavaScript/Node.js, Rust.
 #
 ## ✉ Contacts
