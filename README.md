@@ -23,11 +23,11 @@ I am a person who tries to make the code as readable as possible, always leaving
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
 - 📖 I’m currently learning Rust Language / Cordova
-- 👯 I’m looking to collaborate on Backend or Frontend in Flutter/React, JavaScript/Node.js, Rust.
+- 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web Development and Servers/Database Development.
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
 
 📠 Linkedin: [Leandro Schmidt Portugues/Brazil](https://www.linkedin.com/in/leandrothedev/)
 
-💬 Discord: BoboDev#5900
+💬 Discord: bobodev
