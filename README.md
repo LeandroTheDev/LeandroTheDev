@@ -16,6 +16,9 @@ I am a person who tries to make the code as readable as possible, always leaving
 - JavaScript / Pleno
 - Node.js / Pleno
 - Rust / Junior
+- Cordova / Junior
+- HTML / Sênior
+- ReactNative / Junior
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
