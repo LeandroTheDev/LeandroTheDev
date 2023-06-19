@@ -17,7 +17,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - Node.js / Pleno
 - Rust / Junior
 - Cordova / Junior
-- HTML / Sênior
+- HTML|CSS / Junior
 - ReactNative / Junior
 
 #
