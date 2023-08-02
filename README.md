@@ -22,6 +22,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
+- 🎶 My currently hobby work [Flublade Project](https://github.com/LeandroTheDev/flublade_project) (Open Source RPG Game for IOS,MacOS,Web,Android,Windows,Linux)
 - 📖 I’m currently learning Rust Language / Cordova
 - 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web Development and Servers/Database Development.
 #
