@@ -9,17 +9,32 @@ The games in general was an inspiration to start programming, i used to took som
 I am a person who tries to make the code as readable as possible, always leaving comments in the code sections, making the life easier for people that need a help with my codes.
 
 #
-### Expecializations
-- Flutter / Sênior
+# Expecializations
+### Languages
 - MySQL/MariaDB / Sênior
-- Linux / Sênior
 - JavaScript / Sênior
 - Node.js / Sênior
 - Rust / Junior
 - Cordova / Pleno
 - HTML|CSS / Pleno
+- Lua / Pleno
+
+### Frameworks
+- Flutter / Sênior
 - ReactNative / Junior
-- Lua / Sênior
+- Cordova / Sênior
+- Fyrox / Junior
+- Maui / Pleno
+
+### Areas
+- Software Development / Sênior
+- Mobile Development / Sênior
+- Windows Development / Junior
+- Linux/Mac Development / Junior
+- Design / Sênior
+- Server Development / Sênior
+- Data Organization / Sênior
+- Game Design / Pleno
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
