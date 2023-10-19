@@ -13,11 +13,11 @@ I am a person who tries to make the code as readable as possible, always leaving
 ### Languages
 - MySQL/MariaDB / Sênior
 - JavaScript / Sênior
-- Node.js / Sênior
+- > Node.js / Sênior
+- Java / Pleno
 - Rust / Junior
-- Cordova / Pleno
-- HTML|CSS / Pleno
-- Lua / Pleno
+- HTML|CSS / Sênior
+- Lua / Sênior
 
 ### Frameworks
 - Flutter / Sênior
@@ -39,8 +39,8 @@ I am a person who tries to make the code as readable as possible, always leaving
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
 - 🎶 My currently hobby work [Flublade Project](https://github.com/LeandroTheDev/flublade_project) (Open Source RPG Game for IOS,MacOS,Web,Android,Windows,Linux)
-- 📖 I’m currently learning Rust Language
-- 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web Development and Servers/Database Development.
+- 📖 I’m currently learning Rust / Java / C#
+- 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web/Desk Development and Servers/Database Development.
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
