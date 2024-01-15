@@ -15,7 +15,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - JavaScript / Sênior
 - > Node.js / Sênior
 - Java / Pleno
-- Rust / Junior
+- Rust / Pleno
 - HTML|CSS / Sênior
 - Lua / Sênior
 
@@ -23,7 +23,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - Flutter / Sênior
 - ReactNative / Junior
 - Cordova / Sênior
-- Fyrox / Junior
+- Fyrox / Sênior
 - Maui / Pleno
 
 ### Areas
@@ -34,7 +34,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - Design / Sênior
 - Server Development / Sênior
 - Data Organization / Sênior
-- Game Design / Pleno
+- Game Design / Sênior
 
 #
 - 👷 I’m currently working on [Artesanal Foods](https://github.com/LeandroTheDev/artesanal_foods) (Foods Application Open Source)
