@@ -13,11 +13,12 @@ I am a person who tries to make the code as readable as possible, always leaving
 ### Languages
 - MySQL/MariaDB / Sênior
 - JavaScript / Sênior
-- > Node.js / Sênior
 - Java / Pleno
 - Rust / Pleno
 - HTML|CSS / Sênior
 - Lua / Sênior
+- C# / Pleno
+- Dart / Sênior
 
 ### Frameworks
 - Flutter / Sênior
@@ -25,6 +26,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - Cordova / Sênior
 - Fyrox / Sênior
 - Maui / Pleno
+- Node.js / Sênior
 
 ### Areas
 - Software Development / Sênior
@@ -41,6 +43,7 @@ I am a person who tries to make the code as readable as possible, always leaving
 - 🎶 My currently hobby work [Flublade Project](https://github.com/LeandroTheDev/flublade_project) (Open Source RPG Game for IOS,MacOS,Web,Android,Windows,Linux)
 - 📖 I’m currently learning Rust / Java / C#
 - 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web/Desk Development and Servers/Database Development.
+- 📱 You can view my [site template](https://dogaogames.duckdns.org) to take a look in my projects details.
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
