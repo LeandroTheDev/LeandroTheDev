@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -9,7 +10,7 @@ import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 class WebServer extends ChangeNotifier {
-  static const serverAddress = 'dogaogames.duckdns.org:7979';
+  static const serverAddress = 'localhost:7979';
 
   String _token = "";
   get token => _token;
@@ -65,21 +66,32 @@ class WebServer extends ChangeNotifier {
   }
 
   ///Send a file to the drive
-  static Future<Response> sendFile(context, {required String address, required String filePath, required String saveDirectory}) async {
-    //Getting file name
-    final String fileName = basename(filePath);
-
-    MultipartRequest? result;
-    result = MultipartRequest('POST', Uri.http(serverAddress, address));
-    result.files.add(await MultipartFile.fromPath('file', filePath));
-    result.headers.addAll({
-      'Authorization': Provider.of<WebServer>(context, listen: false).token,
-      'Directory': saveDirectory,
-      'Filename': fileName,
-    });
-    final StreamedResponse response = await result.send();
-
-    return Response(await response.stream.bytesToString(), response.statusCode);
+  static Future<Response> sendFile(
+    context, {
+    required String address,
+    required Uint8List fileBytes,
+    required String fileName,
+    required String saveDirectory,
+  }) async {
+    Map<String, String> headers = {
+      "Content-type": "application/octet-stream",
+      "Authorization": Provider.of<WebServer>(context, listen: false).token,
+    };
+    // Converting Bytes to File
+    String fileEncoded = base64Encode(fileBytes);
+    Map<String, dynamic> body = {
+      "file": fileEncoded,
+      "saveDirectory": saveDirectory,
+      "fileName": fileName,
+    };
+    String sendBody = jsonEncode(body);
+    try {
+      // Upload to the server
+      var response = await post(Uri.http(serverAddress, address), headers: headers, body: sendBody);
+      return response;
+    } catch (error) {
+      return Response(jsonEncode({"message": error}), 400);
+    }
   }
 
   ///Returns true if no error occurs, fatal erros return to home screen

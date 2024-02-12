@@ -20,6 +20,7 @@ website/pubspec.lock
 #Rust
 website_server/node_modules
 website_server/package-lock.json
+website_server/components/drive/credentials.js
 
 # IntelliJ related
 *.iml

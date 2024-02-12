@@ -96,25 +96,27 @@ class _DriveHomeState extends State<DriveHome> {
 
   uploadImage() {
     try {
-      FilePicker.platform.pickFiles().then(
+      FilePicker.platform.pickFiles(allowMultiple: true).then(
         (result) {
           if (result != null) {
-            try {
-              //WHY IS FREEZING HERE???
-              Dialogs.alert(context, message: result.files.toString());
-              Dialogs.alert(context, message: result.files.single.path.toString());
-              String fileDirectory = result.files.single.path!;
-              WebServer.sendFile(context, address: 'drive/uploadfile', filePath: fileDirectory, saveDirectory: directory).then(
-                (response) => {
-                  Dialogs.alert(context, message: "sucess send"),
-                  //Check Error
-                  WebServer.errorTreatment(context, response),
-                  //Update Screen
-                  setState(() => loaded = false),
-                },
-              );
-            } catch (error) {
-              Dialogs.alert(context, message: error.toString());
+            for (int i = 0; i < result.files.length; i++) {
+              try {
+                //Send selected image to the server
+                WebServer.sendFile(
+                  context,
+                  address: 'drive/uploadfile',
+                  fileBytes: result.files[i].bytes!,
+                  fileName: result.files[i].name,
+                  saveDirectory: directory,
+                ).then(
+                  (response) => {
+                    //No errors? update screen
+                    if (WebServer.errorTreatment(context, response)) setState(() => loaded = false),
+                  },
+                );
+              } catch (error) {
+                Dialogs.alert(context, title: "Error", message: "Cannot send the file: ${result.files[i].name} reason: $error");
+              }
             }
           }
         },

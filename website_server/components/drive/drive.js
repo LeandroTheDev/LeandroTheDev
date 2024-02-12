@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require('path');
-const multer = require('multer');
 const { getToken } = require('./authentication');
 
 ///Returns date time
@@ -75,7 +74,7 @@ function drive(http, resetIpTimeout) {
         res.sendFile(filePath);
     });
 
-    //Get Images
+    //Create Folder
     http.post('/drive/createfolder', (req, res) => {
         let data = req.body;
         if (typeof data["directory"] !== "string") {
@@ -143,40 +142,53 @@ function drive(http, resetIpTimeout) {
         });
     });
 
-    //Get Images
+    //Upload
     http.post('/drive/uploadfile', (req, res) => {
-        let directory = req.headers.directory;
-        let fileName = req.headers.filename;
-        if (typeof directory !== "string") {
-            res.status(401).send({ error: true, message: "Invalid Directory, why you are sending me a non string directory?" });
-            return;
-        }
-        if (typeof getToken() !== "string") {
-            res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
-            return;
-        }
-        if (req.headers.authorization != getToken()) {
-            res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
-            return;
-        }
-        let fileSavePath = path.resolve(__dirname, '../', '../', 'drive') + directory;
-        //Upload storage path
-        let storage = multer.diskStorage({ destination: fileSavePath, filename: function (req, file, cb) { cb(null, fileName); } });
-        // Create the upload method and the configurations
-        const upload = multer({ storage: storage }).single('file');
-
-        // Start receiving the image
-        upload(req, res, function (err) {
-            //Check for erros
-            if (err) {
-                return res.status(500).send({ error: true, message: "Error uploading the file " + err });
+        let body = [];
+        //We need to wait to access the body, because the body is too big
+        req.on('data', (chunk) => {
+            //After getting the body will push to the variable
+            body.push(chunk);
+        }).on('end', () => {
+            //Converting the body into readable
+            body = Buffer.concat(body);
+            const data = JSON.parse(body.toString());
+            //Getting important variables
+            const fileName = data.fileName;
+            const directory = data.saveDirectory;
+            //Errors check
+            if (typeof directory !== "string") {
+                res.status(401).send({ error: true, message: "Invalid Directory, why you are sending me a non string directory?" });
+                return;
             }
-
-            console.log("[" + getDateTime() + "] File " + fileName + " Received")
-            //Success
-            res.status(200).send({
-                error: false, message: "success"
-            });
+            if (typeof fileName !== "string") {
+                res.status(401).send({ error: true, message: "Invalid File Name, why you are sending me a non string file name?" });
+                return;
+            }
+            if (typeof getToken() !== "string") {
+                res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
+                return;
+            }
+            if (req.headers.authorization != getToken()) {
+                res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
+                return;
+            }
+            //Converting the file to bytes again
+            const bytes = Buffer.from(data.file, 'base64');
+            //Getting the save path
+            const fileSavePath = path.resolve(__dirname, '../', '../', 'drive') + directory;
+            try {
+                //Saving in the disk
+                fs.writeFileSync(path.join(fileSavePath, fileName), bytes);
+                console.log("[" + getDateTime() + "] File " + fileName + " Received")
+                res.status(200).send({
+                    error: false, message: "success"
+                });
+            } catch (error) {
+                res.status(400).send({
+                    error: true, message: error
+                });
+            }
         });
     });
     console.log("Drive Loaded");
