@@ -8,6 +8,7 @@ class Themes {
   static Map<String, dynamic> loadThemes(BuildContext context) {
     Map<String, dynamic> themes = {};
     themes["largTextTheme"] = Theme.of(context).textTheme.titleLarge;
+    themes["mediumTextTheme"] = Theme.of(context).textTheme.titleMedium;
     return themes;
   }
 }

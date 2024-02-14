@@ -9,7 +9,7 @@ import 'package:leans/components/dialogs.dart';
 import 'package:provider/provider.dart';
 
 class WebServer extends ChangeNotifier {
-  static const serverAddress = 'localhost:7979';
+  static const serverAddress = 'dogaogames.duckdns.org:7979';
 
   String _token = "";
   get token => _token;

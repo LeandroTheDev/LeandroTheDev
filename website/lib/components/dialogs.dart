@@ -2,63 +2,65 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:leans/components/themes.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:provider/provider.dart';
 
 class Dialogs {
   ///Ask for drive credentials
   static Future<void> driveCredentials(BuildContext context) {
+    final Map themes = Themes.loadThemes(context);
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
-
-    final screenSize = MediaQuery.of(context).size;
 
     bool sucess = false;
     Completer<void> completer = Completer<void>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Credentials"),
-        content: SizedBox(
-          height: screenSize.height * 0.5,
-          width: screenSize.width * 0.5,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                //Username
-                TextField(
-                  controller: username,
-                ),
-                //Password
-                TextField(
-                  controller: password,
-                ),
-                const SizedBox(height: 10),
-                //Confirm Button
-                ElevatedButton(
-                    onPressed: () async {
-                      loading(context);
-                      WebServer.sendMessage(
-                        context,
-                        address: "/drive/login",
-                        body: {
-                          "username": username.text,
-                          "password": password.text,
-                        },
-                      ).then(
-                        (response) {
+        title: Text(
+          "Credentials",
+          style: themes["largTextTheme"],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              //Username
+              TextField(
+                controller: username,
+                style: themes["mediumTextTheme"],
+              ),
+              //Password
+              TextField(
+                controller: password,
+                style: themes["mediumTextTheme"],
+                obscureText: true,
+              ),
+              const SizedBox(height: 10),
+              //Confirm Button
+              ElevatedButton(
+                  onPressed: () async {
+                    loading(context);
+                    WebServer.sendMessage(
+                      context,
+                      address: "/drive/login",
+                      body: {
+                        "username": username.text,
+                        "password": password.text,
+                      },
+                    ).then(
+                      (response) {
+                        Navigator.pop(context);
+                        if (WebServer.errorTreatment(context, response)) {
+                          Provider.of<WebServer>(context, listen: false).changeToken(jsonDecode(response.body)["message"]);
+                          sucess = true;
                           Navigator.pop(context);
-                          if (WebServer.errorTreatment(context, response)) {
-                            Provider.of<WebServer>(context, listen: false).changeToken(jsonDecode(response.body)["message"]);
-                            sucess = true;
-                            Navigator.pop(context);
-                          }
-                        },
-                      );
-                    },
-                    child: const Text("Confirm"))
-              ],
-            ),
+                        }
+                      },
+                    );
+                  },
+                  child: const Text("Confirm"))
+            ],
           ),
         ),
       ),
