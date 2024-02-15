@@ -1,20 +1,10 @@
 const cors = require('cors');
-const { authentication } = require('./authentication');
-const drive = require('./drive');
 
 //Declare HTTP
 const http = require('express')();
-var ipTimeout = {};
-function resetIpTimeout(ip) {
-    delete ipTimeout[ip];
-}
-//Enable json suport
-http.use(require('express').json());
-//Enable cors for web
-http.use(cors());
-//Ports for the server
-http.listen(7979, () => { console.log("Drive Responses Loaded"), authentication(http), drive(http, resetIpTimeout) });
+
 //DDOS Protection
+var ipTimeout = {};
 http.use((req, res, next) => {
     //Ip blocked
     if (ipTimeout[req.ip] == 99) {
@@ -36,6 +26,25 @@ http.use((req, res, next) => {
     if (ipTimeout[req.ip] > 2) ipTimeout[req.ip] = 99;
 
     next();
+});
+
+//Enable json suport
+http.use(require('express').json());
+//Enable cors for web
+http.use(cors());
+//Ports for the server
+http.listen(7979, function () {
+    console.log("Drive Listening in 7979");
+
+    //Declaring Authentication
+    const authentication = require('./authentication');
+    authentication.instanciateAuthentication(http)
+    console.log("Drive Authentication Instanciated")
+
+    //Declaring Storage
+    const storage = require("./storage");
+    storage.instanciateDrive(http);
+    console.log("Drive Storage Instanciated");
 });
 
 module.exports = http;

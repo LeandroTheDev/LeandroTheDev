@@ -1,20 +1,17 @@
 const fs = require("fs");
 const path = require('path');
-const { getToken } = require('./authentication');
 
-///Returns date time
-function getDateTime() {
-    const now = new Date();
-    const hora = now.getHours();
-    const dia = now.getDate();
-    const mes = now.getMonth() + 1;
-    const ano = now.getFullYear();
-    return `${hora}h/${dia}d/${mes}m/${ano}y`;
-}
+class Storage {
+    getDateTime() {
+        const now = new Date();
+        const hora = now.getHours();
+        const dia = now.getDate();
+        const mes = now.getMonth() + 1;
+        const ano = now.getFullYear();
+        return `${hora}h/${dia}d/${mes}m/${ano}y`;
+    }
 
-function drive(http, resetIpTimeout) {
-    //Get Folders
-    http.get('/drive/getfolders', (req, res) => {
+    getFolders(req, res) {
         const directory = req.query.directory;
         if (typeof getToken() !== "string") {
             res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
@@ -53,10 +50,9 @@ function drive(http, resetIpTimeout) {
                 }
             });
         });
-    });
+    }
 
-    //Get Images
-    http.get('/drive/getimages', (req, res) => {
+    getImages(req, res) {
         const directory = req.query.directory;
         if (typeof getToken() !== "string") {
             res.status(401).send({ error: true, message: "Invalid Token, your local token will be reset try again." });
@@ -74,10 +70,9 @@ function drive(http, resetIpTimeout) {
         let filePath = path.resolve(__dirname, '../', '../', 'drive') + directory;
         //Returning the image
         res.sendFile(filePath);
-    });
+    }
 
-    //Create Folder
-    http.post('/drive/createfolder', (req, res) => {
+    createFolder(req, res) {
         let data = req.body;
         if (typeof data["directory"] !== "string") {
             res.status(401).send({ error: true, message: "Invalid Folder Name, why you are sending me a non string folder name?" });
@@ -99,10 +94,9 @@ function drive(http, resetIpTimeout) {
         res.status(200).send({
             error: false, message: "success"
         });
-    });
+    }
 
-    //Remove
-    http.post('/drive/delete', (req, res) => {
+    delete(req, res) {
         let data = req.body;
         if (typeof data["item"] !== "string") {
             res.status(401).send({ error: true, message: "Invalid Item Name, why you are sending me a non string item name?" });
@@ -139,10 +133,9 @@ function drive(http, resetIpTimeout) {
         res.status(200).send({
             error: false, message: "success"
         });
-    });
+    }
 
-    //Upload
-    http.post('/drive/uploadfile', (req, res) => {
+    upload(req, res) {
         let body = [];
         //We need to wait to access the body, because the body is too big
         req.on('data', (chunk) => {
@@ -189,8 +182,20 @@ function drive(http, resetIpTimeout) {
                 });
             }
         });
-    });
-    console.log("Drive Loaded");
+    }
+
+    instanciateDrive(http) {
+        //Get
+        http.get('/drive/getfolders', this.getFolders);
+        http.get('/drive/getimages', this.getImages);
+
+        //Post
+        http.post('/drive/createfolder', this.createFolder);
+        http.post('/drive/uploadfile', this.upload);
+
+        //Delete
+        http.delete('/drive/delete', this.delete);
+    }
 }
 
-module.exports = drive;
+module.exports = new Storage;
