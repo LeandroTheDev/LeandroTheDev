@@ -1,49 +1,52 @@
-const Credentials = require("./credentials");
-
-class Authentication {
-    login(req, res) {
+class DriveAuthentication {
+    async login(req, res) {
+        function internalError() {
+            res.status(500).send({ "message": "Internal Error" });
+        }
+        const database = require('./database');
+        const {
+            stringsTreatment,
+        } = require('./utils');
         //Getting data
-        const data = req.body;
-        console.log(req.ip + " trying to logging");
+        const username = req.body.username;
+        const password = req.body.password;
+
+        console.log("[Drive Auth] " + req.ip + " is authenticating");
 
         //Validations
-        if (typeof data["username"] !== "string") {
-            console.log(req.ip + " refused, invalid data");
-            res.status(400).send({ error: true, message: 'Invalid Data' });
-            return;
-        }
-        if (typeof data["password"] !== "string") {
-            console.log(req.ip + " refused, invalid data");
-            res.status(400).send({ error: true, message: 'Invalid Data' });
-            return;
-        }
+        if (stringsTreatment(typeof username, res, "Invalid Username, use a valid username to login.", 400)) return;
+        if (stringsTreatment(typeof password, res, "Invalid Password, use a valid password to login.", 400)) return;
 
         //Credentials for login
-        if (data["username"] == Credentials.username && data["password"] == Credentials.password) {
-            const database = require("./database");
+        let credentialsPass = await database.login(username, password);
+        if (credentialsPass == null) { internalError(); return; };
+
+        //Check if credentials is correct
+        if (credentialsPass) {
             let token = "";
             //Generating the token
             for (let i = 0; i < 100; i++) {
                 token += Math.floor(Math.random() * 10);
             }
             //Updating the token in database
-            database.updateUserToken(token);
-            //Success
+            if (await database.updateUserToken(token, username)) { internalError(); return };
+            delete require("./init").ipTimeout[req.ip];
+            console.log("[Drive Auth] user " + username + " authenticated in ip: " + req.ip);
+            //Success, send the token to the user
             res.status(200).send({ error: false, message: token });
         }
-
         //Wrong Credentials
         else {
-            console.log(req.ip + " refused, wrong credentials");
+            console.log("[Drive Auth] " + req.ip + " authentication refused, wrong credentials for " + username);
             res.status(401).send({ error: true, message: 'Invalid Credentials' });
             return;
         }
     }
-    
+
     instanciateAuthentication(http) {
         //Post
         http.post('/drive/login', this.login);
     }
 }
 
-module.exports = new Authentication;
+module.exports = new DriveAuthentication;

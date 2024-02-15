@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:leans/components/themes.dart';
-import 'package:leans/components/web_server.dart';
-import 'package:leans/pages/drive/drive_home.dart';
+import 'package:leans/pages/drive/home.dart';
+import 'package:leans/pages/drive/provider.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => WebServer()),
+        ChangeNotifierProvider(create: (_) => DriveProvider()),
       ],
       child: const Leans(),
     ),
@@ -18,7 +17,7 @@ void main() {
 class Leans extends StatelessWidget {
   //Colors variables
   static const Map<String, Color> colors = {
-    "primary": Color.fromARGB(255, 121, 118, 118),
+    "primary": Color.fromARGB(255, 78, 78, 78),
     "secondary": Color.fromARGB(255, 42, 128, 168),
     "tertiary": Colors.white,
     "seedColor": Colors.lightBlueAccent,
@@ -57,6 +56,9 @@ class Leans extends StatelessWidget {
           //--------------
           //Widgets Themes
           //--------------
+          iconTheme: IconThemeData(
+            color: colors["tertiary"],
+          ),
           textTheme: TextTheme(
             titleLarge: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
             titleMedium: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
@@ -71,11 +73,19 @@ class Leans extends StatelessWidget {
             ),
           ),
           inputDecorationTheme: InputDecorationTheme(
-            border: UnderlineInputBorder(
-              borderSide: BorderSide(color: colors["secondary"]!),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: colors["tertiary"]!), // Cor da borda quando o campo não está focado
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: colors["secondary"]!), // Cor da borda quando o campo está focado
             ),
           ),
-          dialogBackgroundColor: colors["background"]),
+          dialogTheme: DialogTheme(
+            titleTextStyle: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
+            contentTextStyle: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
+            backgroundColor: colors["primary"],
+          ),
+          dialogBackgroundColor: colors["primary"]),
       routes: {
         "home": (context) => const HomeScreen(),
         "drive": (context) => const DriveHome(),
@@ -91,7 +101,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themes = Themes.loadThemes(context);
     return Scaffold(
       body: SingleChildScrollView(
         child: SizedBox(
@@ -104,7 +113,7 @@ class HomeScreen extends StatelessWidget {
               //Title
               Text(
                 "Leans Website",
-                style: themes["largTextTheme"],
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               //Spacer
               const SizedBox(height: 20),

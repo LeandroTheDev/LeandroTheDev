@@ -1,85 +1,93 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:leans/components/themes.dart';
+import 'package:http/http.dart';
 import 'package:leans/components/web_server.dart';
+import 'package:leans/pages/drive/provider.dart';
 import 'package:provider/provider.dart';
 
 class Dialogs {
-  ///Ask for drive credentials
-  static Future<void> driveCredentials(BuildContext context) {
-    final Map themes = Themes.loadThemes(context);
+  ///Ask for drive credentials and update the token
+  ///if the server returns the token
+  static Future<Response> driveCredentials(BuildContext context) {
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
 
-    bool sucess = false;
-    Completer<void> completer = Completer<void>();
+    Completer<Response> completer = Completer<Response>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
           "Credentials",
-          style: themes["largTextTheme"],
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         content: SingleChildScrollView(
           child: Column(
             children: [
               //Username
-              TextField(
-                controller: username,
-                style: themes["mediumTextTheme"],
-              ),
+              TextField(controller: username, cursorColor: Theme.of(context).colorScheme.tertiary, style: Theme.of(context).textTheme.titleMedium),
               //Password
               TextField(
                 controller: password,
-                style: themes["mediumTextTheme"],
+                cursorColor: Theme.of(context).colorScheme.tertiary,
+                style: Theme.of(context).textTheme.titleMedium,
                 obscureText: true,
               ),
               const SizedBox(height: 10),
-              //Confirm Button
-              ElevatedButton(
-                  onPressed: () async {
-                    loading(context);
-                    WebServer.sendMessage(
-                      context,
-                      address: "/drive/login",
-                      body: {
-                        "username": username.text,
-                        "password": password.text,
-                      },
-                    ).then(
-                      (response) {
-                        Navigator.pop(context);
-                        if (WebServer.errorTreatment(context, response)) {
-                          Provider.of<WebServer>(context, listen: false).changeToken(jsonDecode(response.body)["message"]);
-                          sucess = true;
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  //Confirm Button
+                  ElevatedButton(
+                    onPressed: () async {
+                      loading(context);
+                      WebServer.sendMessage(
+                        context,
+                        address: "/drive/login",
+                        api: "drive",
+                        body: {
+                          "username": username.text,
+                          "password": password.text,
+                        },
+                      ).then(
+                        (response) {
+                          Provider.of<DriveProvider>(context, listen: false).changeUsername(username.text);
+                          //Close Loading
                           Navigator.pop(context);
-                        }
-                      },
-                    );
-                  },
-                  child: const Text("Confirm"))
+                          //Close Credentials
+                          Navigator.pop(context);
+                          completer.complete(response);
+                        },
+                      );
+                    },
+                    child: const Text("Confirm"),
+                  ),
+                  //Back Button
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, "home"),
+                    child: const Text("Back"),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
-    ).then((value) => !sucess ? Navigator.pop(context) : completer.complete());
+    ).then((value) {
+      try {
+        completer.complete(Response("", 101));
+      } catch (_) {}
+    });
     return completer.future;
   }
 
   ///Show a custom alert
   static void alert(BuildContext context, {String title = "Alert", String message = ""}) {
-    final screenSize = MediaQuery.of(context).size;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: SizedBox(
-          height: screenSize.height * 0.5,
-          width: screenSize.width * 0.5,
-          child: Text(message),
-        ),
+        content: Text(message, style: Theme.of(context).textTheme.titleMedium, maxLines: 99),
         actions: [ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
       ),
     );
@@ -87,17 +95,14 @@ class Dialogs {
 
   ///Show the loading dialog
   static void loading(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
     showDialog(
       context: context,
-      builder: (context) => PopScope(
+      builder: (context) => const PopScope(
         canPop: false,
         child: AlertDialog(
           backgroundColor: Colors.transparent,
           content: SizedBox(
-            width: screenSize.width * 0.5,
-            height: screenSize.height * 0.5,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 100.0, vertical: 70),
               child: CircularProgressIndicator(),
             ),
@@ -118,22 +123,12 @@ class Dialogs {
             child: SizedBox(
               width: MediaQuery.of(context).size.width,
               child: AlertDialog(
-                backgroundColor: Theme.of(context).colorScheme.tertiary,
                 title: Column(
                   children: [
                     TextField(
                       controller: input,
-                      decoration: InputDecoration(
-                        labelText: title,
-                        labelStyle: TextStyle(color: Theme.of(context).secondaryHeaderColor),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).secondaryHeaderColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Cor da borda inferior quando o campo não está focado
-                        ),
-                      ),
-                      style: TextStyle(color: Theme.of(context).secondaryHeaderColor, fontSize: 20),
+                      cursorColor: Theme.of(context).colorScheme.tertiary,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     // Spacer
                     const SizedBox(height: 10),
@@ -172,9 +167,8 @@ class Dialogs {
             width: screenSize.width,
             height: screenSize.height,
             child: AlertDialog(
-              backgroundColor: Theme.of(context).colorScheme.tertiary,
-              title: Text(title, style: TextStyle(color: Theme.of(context).secondaryHeaderColor)),
-              content: Text(content, style: TextStyle(color: Theme.of(context).secondaryHeaderColor)),
+              title: Text(title, style: Theme.of(context).textTheme.titleLarge),
+              content: Text(content, style: Theme.of(context).textTheme.titleMedium),
               actions: [
                 //yes
                 TextButton(
@@ -182,7 +176,7 @@ class Dialogs {
                     Navigator.of(context).pop();
                     completer.complete(true);
                   },
-                  child: Text(buttonTitle, style: TextStyle(color: Theme.of(context).secondaryHeaderColor)),
+                  child: Text(buttonTitle, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 //no
                 TextButton(
@@ -190,7 +184,7 @@ class Dialogs {
                     Navigator.of(context).pop();
                     completer.complete(false);
                   },
-                  child: Text(buttonTitle2, style: TextStyle(color: Theme.of(context).secondaryHeaderColor)),
+                  child: Text(buttonTitle2, style: Theme.of(context).textTheme.titleMedium),
                 ),
               ],
             ),

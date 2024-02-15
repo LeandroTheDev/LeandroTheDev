@@ -17,6 +17,7 @@ website/web
 website/analysis_options.yaml
 website/leans.iml
 website/pubspec.lock
+website/.metadata
 #Nodejs
 website_server/node_modules
 website_server/package-lock.json

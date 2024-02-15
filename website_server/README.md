@@ -14,3 +14,5 @@ Also dont forget to add the permission:
 ### Dependencies
 - npm install cors
 - npm install express
+- npm install mariadb
+- npm install sequelize

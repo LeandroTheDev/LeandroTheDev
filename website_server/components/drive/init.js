@@ -8,6 +8,7 @@ var ipTimeout = {};
 http.use((req, res, next) => {
     //Ip blocked
     if (ipTimeout[req.ip] == 99) {
+        console.log("[Drive DDOS] blocked connection from: " + req.ip);
         res.status(413).send({ error: true, message: 'Too Many Attempts' });
         return;
     }
@@ -23,7 +24,7 @@ http.use((req, res, next) => {
     else ipTimeout[req.ip] += 1;
 
     //If the ip try to communicate 5 times to fast then block it
-    if (ipTimeout[req.ip] > 2) ipTimeout[req.ip] = 99;
+    if (ipTimeout[req.ip] > 5) ipTimeout[req.ip] = 99;
 
     next();
 });
@@ -47,4 +48,6 @@ http.listen(7979, function () {
     console.log("Drive Storage Instanciated");
 });
 
-module.exports = http;
+module.exports = {
+    ipTimeout,
+};
