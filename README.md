@@ -2,11 +2,13 @@
 
 I have 21 years, starting learning Rust language.
 
-My professional idea is to be the full stack developer, trying to learn all sides of languages and softwares learning.
+My professional idea is to be a full stack developer, trying to learn all sides of languages and softwares learning.
 
 The games in general was an inspiration to start programming, i used to took some source codes and modified by myself before i really started in programation, now I'm focusing on studying, always keeping in mind the organization of the code, this is my dilemma.
 
 I am a person who tries to make the code as readable as possible, always leaving comments in the code sections, making the life easier for people that need a help with my codes.
+
+Always following the good code practices, and a FTM developer projects, take a time and see my [portfolio](http://leandrothedev.duckdns.org:7878)
 
 #
 # Expecializations
@@ -43,7 +45,6 @@ I am a person who tries to make the code as readable as possible, always leaving
 - 🎶 My currently hobby work [Flublade Project](https://github.com/LeandroTheDev/flublade_project) (Open Source RPG Game for IOS,MacOS,Web,Android,Windows,Linux)
 - 📖 I’m currently learning Rust / Java / C#
 - 👯 I’m looking to collaborate on Backend or Frontend in Mobile/Web/Desk Development and Servers/Database Development.
-- 📱 You can view my [site template](http://dogaogames.duckdns.org) to take a look in my projects details.
 #
 ## ✉ Contacts
 📩 E-mail: leandro.schmidt.profissional@gmail.com
