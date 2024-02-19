@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leans/pages/drive/home.dart';
 import 'package:leans/pages/drive/provider.dart';
+import 'package:leans/pages/protify/home.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -89,6 +90,7 @@ class Leans extends StatelessWidget {
       routes: {
         "home": (context) => const HomeScreen(),
         "drive": (context) => const DriveHome(),
+        "protify": (context) => const ProtifyHome(),
       },
       home: const HomeScreen(),
     );
@@ -101,6 +103,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       body: SingleChildScrollView(
         child: SizedBox(
@@ -118,9 +121,77 @@ class HomeScreen extends StatelessWidget {
               //Spacer
               const SizedBox(height: 20),
               //Drive
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, "drive"),
-                child: const Text("Drive"),
+              Container(
+                width: screenSize.width,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: screenSize.width < 1000 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                  children: [
+                    //Drive Title
+                    Text(
+                      "The best location to save your files is here, in the drive.",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    //Drive Button
+                    SizedBox(
+                      width: 110,
+                      child: FittedBox(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, "drive"),
+                          child: Row(
+                            children: [
+                              const Text("Drive"),
+                              const SizedBox(width: 5),
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Image.asset("assets/drive/icon.png"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //Protify
+              Container(
+                width: screenSize.width,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    //Protify Title
+                    Text(
+                      "Protify is a software designed to easily run games and softwares in linux, a light-weight launcher that uses proton, you can easily customize the launch parameters for the games and softwares.",
+                      maxLines: 99,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    //Protify Button
+                    SizedBox(
+                      width: 250,
+                      child: FittedBox(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, "protify"),
+                          child: Row(
+                            children: [
+                              const Text("Protify Demonstration"),
+                              const SizedBox(width: 5),
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Image.asset("assets/protify/icon.png"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
