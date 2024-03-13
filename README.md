@@ -27,6 +27,7 @@ Always following the good code practices, and a FTM developer projects, take a t
 - Fyrox / Sênior
 - Maui / Pleno
 - Node.js / Sênior
+- Maui / Sênior
 
 ### Areas
 - Software Development / Sênior
