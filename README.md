@@ -1,7 +1,5 @@
 ### Personal Overview 💻
 
-I have 21 years, starting learning Rust language.
-
 My professional idea is to be a full stack developer, trying to learn all sides of languages and softwares learning.
 
 The games in general was an inspiration to start programming, i used to took some source codes and modified by myself before i really started in programation, now I'm focusing on studying, always keeping in mind the organization of the code, this is my dilemma.
