@@ -6,7 +6,7 @@ The games in general was an inspiration to start programming, i used to took som
 
 I am a person who tries to make the code as readable as possible, always leaving comments in the code sections, making the life easier for people that need a help with my codes.
 
-Always following the good code practices, and a FTM developer projects, take a time and see my [portfolio](http://leandrothedev.duckdns.org:7878)
+Always following the good code practices, and a FTM developer projects, take a time and see my [portfolio](http://leandrothedev.duckdns.org)
 
 #
 # Expecializations
