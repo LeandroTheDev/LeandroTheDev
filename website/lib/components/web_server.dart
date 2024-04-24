@@ -172,9 +172,7 @@ class WebServer {
     return await sender.post(
       "http://$serverAddress$address",
       data: formData,
-      onSendProgress: (count, total) {
-        apiProvider.uploadStatus[configs!["fileName"]] = (count / total) * 100;
-      },
+      onSendProgress: (count, total) => apiProvider.updateKeyUploadStatus(configs!["fileName"], (count / total) * 100),
     ).catchError(
       (error) => Response(
         statusCode: 504,

@@ -123,7 +123,6 @@ class DriveStorage {
     }
 
     async delete(req, res) {
-        console.log("okcalled");
         function getDateTime() {
             const now = new Date();
             const hora = now.getHours();

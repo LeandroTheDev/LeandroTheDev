@@ -36,7 +36,7 @@ class DriveProvider extends ChangeNotifier {
   Map<String, double> _uploadStatus = {};
   Map<String, double> get uploadStatus => _uploadStatus;
   void changeUploadStatus(value) => _uploadStatus = value;
-  void updateKeyUploadStatus(String key, double value) => _uploadStatus[key] = value;
+  void updateKeyUploadStatus(String key, double value) => { _uploadStatus[key] = value, notifyListeners() };
 
   //
   //#region Directory Managment
@@ -181,6 +181,7 @@ class DriveProvider extends ChangeNotifier {
               try {
                 // Null bytes treatment
                 if (result.files[i].bytes == null) throw "File not found";
+                print(result.files[i].bytes?.length);
 
                 // Update upload status for the file
                 _uploadStatus[result.files[i].name] = 0;
