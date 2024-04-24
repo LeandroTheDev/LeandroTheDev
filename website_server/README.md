@@ -16,3 +16,4 @@ Also dont forget to add the permission:
 - npm install express
 - npm install mariadb
 - npm install sequelize
+- npm install multer

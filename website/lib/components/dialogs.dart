@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:provider/provider.dart';
@@ -10,10 +10,15 @@ class Dialogs {
   ///Ask for drive credentials and update the token
   ///if the server returns the token
   static Future<Response> driveCredentials(BuildContext context) {
+    DriveUtils.log("Instanciating dialog for credentials");
+
+    DriveProvider driveProvider = Provider.of<DriveProvider>(context, listen: false);
+
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
 
     Completer<Response> completer = Completer<Response>();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -40,6 +45,7 @@ class Dialogs {
                   //Confirm Button
                   ElevatedButton(
                     onPressed: () async {
+                      DriveUtils.log("Confirming credentials...");
                       loading(context);
                       WebServer.sendMessage(
                         context,
@@ -51,11 +57,15 @@ class Dialogs {
                         },
                       ).then(
                         (response) {
-                          Provider.of<DriveProvider>(context, listen: false).changeUsername(username.text);
+                          DriveUtils.log("Credentials server returned code: ${response.statusCode}");
+
+                          driveProvider.changeUsername(username.text);
                           //Close Loading
                           Navigator.pop(context);
                           //Close Credentials
                           Navigator.pop(context);
+
+                          DriveUtils.log("Returning future...");
                           completer.complete(response);
                         },
                       );
@@ -75,7 +85,12 @@ class Dialogs {
       ),
     ).then((value) {
       try {
-        completer.complete(Response("", 101));
+        completer.complete(Response(
+            statusCode: 101,
+            requestOptions: RequestOptions(
+              data: "",
+            )));
+        DriveUtils.log("Credentials cancelled");
       } catch (_) {}
     });
     return completer.future;

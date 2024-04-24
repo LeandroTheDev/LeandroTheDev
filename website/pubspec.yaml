@@ -10,10 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  http: ^1.2.0
-  provider: ^6.1.1
-  file_picker: ^6.1.1
-  path: ^1.8.3
+  dio: ^5.4.3+1 # Requests
+  http: ^1.2.1 # Download Files
+  provider: ^6.1.1 # Communications between classes
+  file_picker: ^6.1.1 # Native pick files
+  path: ^1.8.3 # Native path
 
 dev_dependencies:
   flutter_test:

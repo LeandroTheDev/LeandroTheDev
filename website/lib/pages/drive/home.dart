@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/web_server.dart';
+import 'package:leans/main.dart';
+import 'package:leans/pages/drive/configs.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:provider/provider.dart';
 
@@ -16,156 +16,12 @@ class DriveHome extends StatefulWidget {
 
 class _DriveHomeState extends State<DriveHome> {
   bool loaded = false;
-  List folders = [];
-  List files = [];
-  String directory = "";
-
-  Map images = {};
-
-  //---------
-  //Directory
-  //---------
-  loadDirectory() {
-    WebServer.sendMessage(context, api: 'drive', address: "drive/getfolders", body: {"directory": directory}, requestType: "get").then(
-      (response) {
-        //Check errors
-        if (WebServer.errorTreatment(context, "drive", response, isFatal: true)) {
-          //Load folders and files
-          final data = jsonDecode(response.body)["message"];
-          setState(() {
-            folders = data["folders"];
-            files = data["files"];
-          });
-          //Image Loader
-          for (int i = 0; i < files.length; i++) {
-            if (checkIfIsImage(files[i])) {
-              //Get image
-              WebServer.sendMessage(context, api: "drive", address: "drive/getimages", body: {"directory": "$directory/${files[i]}"}, requestType: "get").then((response) {
-                //Check errors
-                if (WebServer.errorTreatment(context, "drive", response)) {
-                  //Update image
-                  setState(() {
-                    images[files[i]] = MemoryImage(response.bodyBytes);
-                  });
-                }
-              });
-            }
-          }
-        }
-      },
-    );
-  }
-
-  nextDirectory(String folderName) {
-    directory += "/$folderName";
-    loadDirectory();
-  }
-
-  previousDirectory() {
-    try {
-      int barrierIndex = directory.lastIndexOf('/');
-      //Remove the last folder in directory variable
-      directory = directory.substring(0, barrierIndex);
-    } catch (error) {
-      return;
-    }
-    loadDirectory();
-  }
-
-  //---------
-  //Utils
-  //---------
-  checkIfIsImage(String fileName) {
-    if (fileName.endsWith(".png")) return true;
-    if (fileName.endsWith(".jpg")) return true;
-    if (fileName.endsWith(".jpeg")) return true;
-    return false;
-  }
-
-  imageThumbnail(String imageName) {
-    if (images[imageName] == null) {
-      return const CircularProgressIndicator();
-    } else {
-      return Image(image: images[imageName]);
-    }
-  }
-
-  getDirectoryName() {
-    int slashIndex = directory.lastIndexOf('/');
-    if (slashIndex != -1) {
-      return directory.substring(slashIndex + 1);
-    } else {
-      return directory;
-    }
-  }
-
-  //---------
-  //Management
-  //---------
-  uploadImage() {
-    try {
-      FilePicker.platform.pickFiles(allowMultiple: true).then(
-        (result) {
-          if (result != null) {
-            for (int i = 0; i < result.files.length; i++) {
-              try {
-                //Send selected image to the server
-                WebServer.sendFile(
-                  context,
-                  api: "drive",
-                  address: 'drive/uploadfile',
-                  fileBytes: result.files[i].bytes!,
-                  fileName: result.files[i].name,
-                  saveDirectory: directory,
-                ).then(
-                  (response) => {
-                    //No errors? update screen
-                    if (WebServer.errorTreatment(context, "drive", response)) loadDirectory(),
-                  },
-                );
-              } catch (error) {
-                Dialogs.alert(context, title: "Error", message: "Cannot send the file: ${result.files[i].name} reason: $error");
-              }
-            }
-          }
-        },
-      );
-    } catch (error) {
-      Dialogs.alert(context, message: error.toString());
-    }
-  }
-
-  createFolder() {
-    Dialogs.typeInput(context).then(
-      (folderName) => {
-        WebServer.sendMessage(context, api: "drive", address: 'drive/createfolder', body: {"directory": "$directory/$folderName"}).then(
-          (response) => {
-            //Check errors
-            if (WebServer.errorTreatment(context, "drive", response)) loadDirectory(),
-          },
-        )
-      },
-    );
-  }
-
-  delete(String itemName) {
-    Dialogs.showQuestion(context, title: "Are you sure?", content: "Do you want to delete $itemName?").then(
-      (value) => {
-        if (value)
-          WebServer.sendMessage(context, api: "drive", address: 'drive/delete', body: {"item": "$directory/$itemName"}, requestType: "delete").then(
-            (response) => {
-              //Check errors
-              if (WebServer.errorTreatment(context, "drive", response)) loadDirectory(),
-            },
-          ),
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final driveProvider = Provider.of<DriveProvider>(context, listen: false);
+    final driveProvider = Provider.of<DriveProvider>(context, listen: true);
     final screenSize = MediaQuery.of(context).size;
+
     //Check if credentials is needed
     if (!loaded && driveProvider.token == "") {
       loaded = true;
@@ -174,200 +30,277 @@ class _DriveHomeState extends State<DriveHome> {
         (_) => Dialogs.driveCredentials(context).then(
           (response) {
             if (WebServer.errorTreatment(context, "drive", response, isFatal: true)) {
-              Provider.of<DriveProvider>(context, listen: false).changeToken(jsonDecode(response.body)["message"]);
-              loadDirectory();
+              DriveUtils.log("No errors in credentials, updating token and refreshing directory");
+              driveProvider.changeToken(response.data["message"]);
+              driveProvider.refreshDirectory(context);
             }
           },
         ),
       );
     }
-    //If not dont ask for credentials just send a message to get folders
-    else if (!loaded) {
-      loaded = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => loadDirectory());
-    }
+
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
-        if (directory == "") {
+        // If theres is no more directory return to home screen
+        if (driveProvider.directory == "")
           Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false);
-        } else {
-          previousDirectory();
-        }
+        // In others case go to previous directory
+        else
+          driveProvider.previousDirectory(context);
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Drive"),
-          backgroundColor: Theme.of(context).colorScheme.secondary,
-          titleTextStyle: Theme.of(context).textTheme.titleLarge,
-          iconTheme: Theme.of(context).iconTheme,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false);
-            },
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(DriveConfigs.getWidgetSize(widget: "bar", type: "height", screenSize: screenSize)),
+          child: AppBar(
+            title: const Text("Drive"),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            titleTextStyle: Theme.of(context).textTheme.titleLarge,
+            iconTheme: Theme.of(context).iconTheme,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false),
+            ),
+          ),
+        ),
+        endDrawer: Drawer(
+          width: screenSize.width * 0.3,
+          child: Container(
+            color: Leans.colors["primary"],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    "Uploads",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: driveProvider.uploadStatus.length,
+                      itemBuilder: (context, index) => SizedBox(
+                          height: DriveConfigs.getWidgetSize(widget: "bar", type: "height", screenSize: screenSize),
+                          width: screenSize.width * 0.3,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // File name
+                              SizedBox(
+                                width: screenSize.width * 0.2,
+                                child: Text(
+                                  driveProvider.uploadStatus.keys.toList()[index],
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                              // Upload Progress indicator
+                              driveProvider.uploadStatus.values.toList()[index] >= 100
+                                  ? Icon(Icons.check, color: Leans.colors["seedColor"])
+                                  : SizedBox(
+                                      height: DriveConfigs.getWidgetSize(widget: "itemprogress", type: "height", screenSize: screenSize),
+                                      width: DriveConfigs.getWidgetSize(widget: "itemprogress", type: "width", screenSize: screenSize),
+                                      child: CircularProgressIndicator(
+                                        value: driveProvider.uploadStatus.values.toList()[index] / 100,
+                                        color: Leans.colors["seedColor"],
+                                        strokeWidth: 5,
+                                        backgroundColor: Leans.colors["background"],
+                                      ),
+                                    ),
+                            ],
+                          )),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(children: [
-            //Title Bar
-            Row(
-              children: [
-                // Back button
-                SizedBox(
-                  height: 46,
-                  width: 46,
-                  child: directory == ""
-                      ? const SizedBox(height: 10, width: 25)
-                      : IconButton(
-                          onPressed: () => previousDirectory(),
-                          icon: const Icon(Icons.arrow_back_ios),
-                        ),
-                ),
-                const SizedBox(width: 5),
-                // Actual Directory
-                SizedBox(
-                  height: 24,
-                  child: Text(
-                    directory == "" ? "Home" : directory,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-              ],
-            ),
-            //Spacer
-            const SizedBox(height: 15),
-            //Folders
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: folders.length,
-              itemBuilder: (context, index) => Container(
-                padding: const EdgeInsets.all(8),
-                width: screenSize.width - 16,
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).secondaryHeaderColor,
-                      width: 2.0,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => nextDirectory(folders[index]),
-                      child: Row(children: [
-                        //Icon
-                        SizedBox(
-                          width: screenSize.width * 0.15,
-                          height: screenSize.height * 0.1,
-                          child: FittedBox(
-                              child: Icon(
-                            Icons.folder,
-                            color: Theme.of(context).secondaryHeaderColor,
-                          )),
-                        ),
-                        //Spacer
-                        const SizedBox(width: 5),
-                        //Name
-                        SizedBox(
-                          width: screenSize.width * 0.80 - 142,
-                          height: screenSize.height * 0.1,
-                          child: FittedBox(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              folders[index],
-                              textAlign: TextAlign.start,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                        ),
-                      ]),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 80,
-                      height: screenSize.height * 0.1,
-                      child: IconButton(
-                        onPressed: () => delete(folders[index]),
-                        icon: const FittedBox(child: Icon(Icons.delete, color: Colors.redAccent)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            //Files
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: files.length,
-              itemBuilder: (context, index) => Container(
-                padding: const EdgeInsets.all(8),
-                width: screenSize.width - 16,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: Colors.black, // Cor da borda
-                      width: 2.0, // Espessura da borda
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: () {},
-                      child: Row(children: [
-                        //Icon
-                        SizedBox(
-                          width: screenSize.width * 0.15,
-                          height: screenSize.height * 0.1,
-                          child: FittedBox(child: checkIfIsImage(files[index]) ? imageThumbnail(files[index]) : const Icon(Icons.file_copy)),
-                        ),
-                        //Spacer
-                        const SizedBox(width: 5),
-                        //Name
-                        SizedBox(
-                          width: screenSize.width * 0.65 - 61,
-                          height: screenSize.height * 0.1,
-                          child: FittedBox(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              files[index],
-                              textAlign: TextAlign.start,
-                            ),
-                          ),
-                        ),
-                      ]),
-                    ),
-                    SizedBox(
-                      width: screenSize.width * 0.2,
-                      height: screenSize.height * 0.1,
-                      child: IconButton(
-                        onPressed: () => delete(files[index]),
-                        icon: const FittedBox(child: Icon(Icons.delete, color: Colors.redAccent)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            //Spacer
-            const SizedBox(height: 15),
-            FittedBox(
+            // Title Bar
+            SizedBox(
+              height: DriveConfigs.getWidgetSize(widget: "bar", type: "height", screenSize: screenSize),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () => uploadImage(),
-                    child: const Text("Upload File"),
+                  // Back button
+                  SizedBox(
+                    height: 46,
+                    width: 46,
+                    child: driveProvider.directory == ""
+                        ? const SizedBox(height: 10, width: 25)
+                        : IconButton(
+                            onPressed: () => driveProvider.previousDirectory(context),
+                            icon: const Icon(Icons.arrow_back_ios),
+                          ),
                   ),
-                  const SizedBox(width: 15),
-                  ElevatedButton(
-                    onPressed: () => createFolder(),
-                    child: const Text("Create Folder"),
+                  const SizedBox(width: 5),
+                  // Actual Directory
+                  SizedBox(
+                    height: 24,
+                    child: Text(
+                      driveProvider.directory == "" ? "Home" : driveProvider.directory,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
                 ],
+              ),
+            ),
+            // Spacer
+            const SizedBox(height: 15),
+            // Files and folders
+            SizedBox(
+              height: DriveConfigs.getScreenSize(widgets: ["bar", "bar", "bar"], type: "height", screenSize: screenSize) - 350,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    //Folders
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: driveProvider.folders.length,
+                      itemBuilder: (context, index) => Container(
+                        padding: const EdgeInsets.all(8),
+                        width: screenSize.width - 16,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: Theme.of(context).secondaryHeaderColor,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon and Name
+                            TextButton(
+                              onPressed: () => driveProvider.nextDirectory(context, index),
+                              child: Row(children: [
+                                //Icon
+                                SizedBox(
+                                  width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "width", screenSize: screenSize),
+                                  height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+                                  child: FittedBox(
+                                      child: Icon(
+                                    Icons.folder,
+                                    color: Theme.of(context).secondaryHeaderColor,
+                                  )),
+                                ),
+                                //Spacer
+                                const SizedBox(width: 15),
+                                //Name
+                                SizedBox(
+                                  width: DriveConfigs.getScreenSize(widgets: ["itemicon"], type: "width", screenSize: screenSize) - 236,
+                                  height: DriveConfigs.getWidgetSize(widget: "itemtext", type: "height", screenSize: screenSize),
+                                  child: FittedBox(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      driveProvider.folders[index],
+                                      textAlign: TextAlign.start,
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                ),
+                              ]),
+                            ),
+                            const SizedBox(width: 15),
+                            // Trash icon
+                            SizedBox(
+                              width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "width", screenSize: screenSize),
+                              height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+                              child: IconButton(
+                                onPressed: () => driveProvider.delete(context, driveProvider.folders[index]),
+                                icon: const FittedBox(child: Icon(Icons.delete, color: Colors.redAccent)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Files
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: driveProvider.files.length,
+                      itemBuilder: (context, index) => Container(
+                        padding: const EdgeInsets.all(8),
+                        width: screenSize.width - 16,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: Theme.of(context).secondaryHeaderColor,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon and Name
+                            TextButton(
+                              onPressed: () {},
+                              child: Row(children: [
+                                //Icon
+                                SizedBox(
+                                  width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "width", screenSize: screenSize),
+                                  height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+                                  child: FittedBox(
+                                    child: DriveUtils.checkIfIsImage(driveProvider.files[index]) ? driveProvider.getImageThumbnail(driveProvider.files[index]) : const Icon(Icons.file_copy),
+                                  ),
+                                ),
+                                //Spacer
+                                const SizedBox(width: 15),
+                                //Name
+                                SizedBox(
+                                  width: DriveConfigs.getScreenSize(widgets: ["itemicon"], type: "width", screenSize: screenSize) - 236,
+                                  height: DriveConfigs.getWidgetSize(widget: "itemtext", type: "height", screenSize: screenSize),
+                                  child: FittedBox(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      driveProvider.files[index],
+                                      textAlign: TextAlign.start,
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                ),
+                              ]),
+                            ),
+                            const SizedBox(width: 15),
+                            // Trash icon
+                            SizedBox(
+                              width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "width", screenSize: screenSize),
+                              height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+                              child: IconButton(
+                                onPressed: () => driveProvider.delete(context, driveProvider.files[index]),
+                                icon: const FittedBox(child: Icon(Icons.delete, color: Colors.redAccent)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Spacer
+            const SizedBox(height: 15),
+            // Upload and Create folder buttons
+            SizedBox(
+              height: DriveConfigs.getWidgetSize(widget: "bar", type: "height", screenSize: screenSize),
+              child: FittedBox(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => driveProvider.uploadFile(context),
+                      child: const Text("Upload File"),
+                    ),
+                    const SizedBox(width: 15),
+                    ElevatedButton(
+                      onPressed: () => driveProvider.createFolder(context),
+                      child: const Text("Create Folder"),
+                    ),
+                  ],
+                ),
               ),
             )
           ]),

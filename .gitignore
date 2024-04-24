@@ -1,7 +1,6 @@
 #Flutter
 website/build
 website/linux
-website/web
 website/analysis_options.yaml
 website/leans.iml
 website/pubspec.lock

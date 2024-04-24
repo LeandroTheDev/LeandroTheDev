@@ -75,10 +75,10 @@ class Leans extends StatelessWidget {
           ),
           inputDecorationTheme: InputDecorationTheme(
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: colors["tertiary"]!), // Cor da borda quando o campo não está focado
+              borderSide: BorderSide(color: colors["tertiary"]!),
             ),
             focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: colors["secondary"]!), // Cor da borda quando o campo está focado
+              borderSide: BorderSide(color: colors["secondary"]!),
             ),
           ),
           dialogTheme: DialogTheme(

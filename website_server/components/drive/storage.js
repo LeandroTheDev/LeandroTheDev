@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require('path');
+const multer = require('multer');
 
 class DriveStorage {
     static directoryTreatment(directory) {
@@ -55,7 +56,7 @@ class DriveStorage {
         });
     }
 
-    async getImages(req, res) {
+    async getFile(req, res) {
         const directory = req.query.directory;
         const headers = req.headers;
 
@@ -79,7 +80,7 @@ class DriveStorage {
         //Getting the image path
         let filePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
         //Returning the image
-        res.sendFile(filePath);
+        res.status(200).send(fs.readFileSync(filePath).toString('base64'));
     }
 
     async createFolder(req, res) {
@@ -122,6 +123,7 @@ class DriveStorage {
     }
 
     async delete(req, res) {
+        console.log("okcalled");
         function getDateTime() {
             const now = new Date();
             const hora = now.getHours();
@@ -191,11 +193,11 @@ class DriveStorage {
     async upload(req, res) {
         function getDateTime() {
             const now = new Date();
-            const hora = now.getHours();
-            const dia = now.getDate();
-            const mes = now.getMonth() + 1;
-            const ano = now.getFullYear();
-            return `${hora}h/${dia}d/${mes}m/${ano}y`;
+            const hour = now.getHours();
+            const day = now.getDate();
+            const month = now.getMonth() + 1;
+            const year = now.getFullYear();
+            return `${hour}h/${day}d/${month}m/${year}y`;
         }
         const headers = req.headers;
 
@@ -210,19 +212,12 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
 
-        //Data buffer
-        let body = [];
+        // Get save directory
+        const directory = req.body.saveDirectory;
 
-        //We need to wait to access the body, because the body is too big
-        req.on('data', (chunk) => {
-            //After getting the body will push to the variable
-            body.push(chunk);
-        }).on('end', () => {
-            //Converting the body into readable data
-            body = Buffer.concat(body);
-            const data = JSON.parse(body.toString());
-            const fileName = data.fileName;
-            const directory = data.saveDirectory;
+        // Swipe all files
+        for (let fileIndex = 0; fileIndex < req.files.length; fileIndex++) {
+            const fileName = req.files[fileIndex]["originalname"];
 
             //Errors check
             if (stringsTreatment(typeof directory, res, "Invalid Directory, why you are sending me a non string directory?", 401)) return;
@@ -233,7 +228,7 @@ class DriveStorage {
             }
 
             //Converting the file to bytes again
-            const bytes = Buffer.from(data.file, 'base64');
+            const bytes = req.files[fileIndex]["buffer"];
             //Getting the save path
             const fileSavePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
             try {
@@ -249,7 +244,7 @@ class DriveStorage {
                     error: true, message: error
                 });
             }
-        });
+        }
     }
 
     instanciateDrive(http, timeoutFunction) {
@@ -257,11 +252,11 @@ class DriveStorage {
 
         //Get
         http.get('/drive/getfolders', this.getFolders);
-        http.get('/drive/getimages', this.getImages);
+        http.get('/drive/getfile', this.getFile);
 
         //Post
         http.post('/drive/createfolder', this.createFolder);
-        http.post('/drive/uploadfile', this.upload);
+        http.post('/drive/uploadfile', multer().any(), this.upload);
 
         //Delete
         http.delete('/drive/delete', this.delete);

@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 //Dependencies
+import 'package:dio/dio.dart';
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/utils.dart';
+import 'package:http/http.dart' as http;
 
 //Packages
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 class WebServer {
   static const serverAddress = 'localhost:7979';
@@ -31,65 +31,69 @@ class WebServer {
     Map<String, dynamic>? body,
     String requestType = "post",
   }) async {
+    body ??= {};
+
     Future<Response> getRequest() async {
-      Response? result;
-      try {
-        final apiProvider = Utils.getApiProvider(context, api);
-        result = await get(
-          Uri.http(serverAddress, address, body),
-          headers: {"username": apiProvider.username, "token": apiProvider.token},
-        );
-      } catch (error) {
-        if (result == null) {
-          return Response(jsonEncode({"error": true, "message": "No Connection: $error"}), 504);
-        }
-        return result;
-      }
-      return result;
+      Dio sender = Dio();
+      final apiProvider = Utils.getApiProvider(context, api);
+
+      sender.options.headers = {"username": apiProvider.username, "token": apiProvider.token};
+      sender.options.validateStatus = (status) {
+        status ??= 504;
+        return status < 500;
+      };
+      return await sender.get("http://$serverAddress$address", queryParameters: body).catchError(
+            (error) => Response(
+              statusCode: 504,
+              data: {"message": error == DioException ? error.message : error.toString()},
+              requestOptions: RequestOptions(),
+            ),
+          );
     }
 
     Future<Response> postRequest() async {
-      Response? result;
-      try {
-        final apiProvider = Utils.getApiProvider(context, api);
-        result = await post(
-          Uri.http(serverAddress, address),
-          headers: {
-            HttpHeaders.contentTypeHeader: 'application/json',
-            "username": apiProvider.username,
-            "token": apiProvider.token,
-          },
-          body: jsonEncode(body),
-        );
-      } catch (error) {
-        if (result == null) {
-          return Response(jsonEncode({"error": true, "message": "No Connection: $error"}), 504);
-        }
-        return result;
-      }
-      return result;
+      Dio sender = Dio();
+      final apiProvider = Utils.getApiProvider(context, api);
+
+      sender.options.headers = {
+        "content-type": 'application/json',
+        "username": apiProvider.username,
+        "token": apiProvider.token,
+      };
+      sender.options.validateStatus = (status) {
+        status ??= 504;
+        return status < 500;
+      };
+      return await sender.post("http://$serverAddress$address", data: body).catchError(
+            (error) => Response(
+              statusCode: 504,
+              data: {"message": error == DioException ? error.message : error.toString()},
+              requestOptions: RequestOptions(),
+            ),
+          );
     }
 
     Future<Response> deleteRequest() async {
-      Response? result;
-      try {
-        final apiProvider = Utils.getApiProvider(context, api);
-        result = await delete(
-          Uri.http(serverAddress, address),
-          headers: {
-            HttpHeaders.contentTypeHeader: 'application/json',
-            "username": apiProvider.username,
-            "token": Utils.getApiProvider(context, api).token,
-          },
-          body: jsonEncode(body),
-        );
-      } catch (error) {
-        if (result == null) {
-          return Response(jsonEncode({"error": true, "message": "No Connection: $error"}), 504);
-        }
-        return result;
-      }
-      return result;
+      Dio sender = Dio();
+      final apiProvider = Utils.getApiProvider(context, api);
+
+      sender.options.headers = {
+        "content-type": 'application/json',
+        "username": apiProvider.username,
+        "token": Utils.getApiProvider(context, api).token,
+      };
+      sender.options.validateStatus = (status) {
+        status ??= 504;
+        return status < 500;
+      };
+
+      return await sender.delete("http://$serverAddress$address", data: body).catchError(
+            (error) => Response(
+              statusCode: 504,
+              data: {"message": error == DioException ? error.message : error.toString()},
+              requestOptions: RequestOptions(),
+            ),
+          );
     }
 
     switch (requestType) {
@@ -100,39 +104,84 @@ class WebServer {
       case "delete":
         return await deleteRequest();
       default:
-        return Response(jsonEncode({"error": true, "message": "Request Type not found"}), 401);
+        return Response(
+            statusCode: 504,
+            requestOptions: RequestOptions(
+              data: {"message": "Invalid request type"},
+            ));
     }
   }
 
-  ///Send a file to the drive
+  static Future<Response> downloadFile(
+    BuildContext context, {
+    required String address,
+    required String api,
+    Map<String, dynamic>? body,
+  }) async {
+    final apiProvider = Utils.getApiProvider(context, api);
+
+    // Receive download
+    http.Response result = await http.get(
+      Uri.http(serverAddress, address, body),
+      headers: {"username": apiProvider.username, "token": apiProvider.token},
+    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": "No Connection: $error"}), 504));
+    return Response(
+      statusCode: result.statusCode,
+      data: base64Decode(result.body),
+      requestOptions: RequestOptions(),
+    );
+  }
+
+  /// Send a file to the drive
+  ///
+  /// Configs accepts:
+  /// saveDirectory, fileName
   static Future<Response> sendFile(
     context, {
     required String address,
     required String api,
     required Uint8List fileBytes,
-    required String fileName,
-    required String saveDirectory,
+    String fileName = "temp",
+    Map? configs,
   }) async {
-    Map<String, String> headers = {
-      "Content-type": "application/octet-stream",
-      "username": Utils.getApiProvider(context, api).username,
-      "token": Utils.getApiProvider(context, api).token,
+    configs ??= {};
+
+    Dio sender = Dio();
+    final apiProvider = Utils.getApiProvider(context, api);
+
+    sender.options.headers = {
+      "content-type": 'multipart/form-data',
+      "username": apiProvider.username,
+      "token": apiProvider.token,
     };
-    // Converting Bytes to File
-    String fileEncoded = base64Encode(fileBytes);
-    Map<String, dynamic> body = {
-      "file": fileEncoded,
-      "saveDirectory": saveDirectory,
-      "fileName": fileName,
+    sender.options.validateStatus = (status) {
+      status ??= 504;
+      return status < 500;
     };
-    String sendBody = jsonEncode(body);
-    try {
-      // Upload to the server
-      var response = await post(Uri.http(serverAddress, address), headers: headers, body: sendBody);
-      return response;
-    } catch (error) {
-      return Response(jsonEncode({"message": error}), 400);
-    }
+
+    // Creating data
+    FormData formData = FormData();
+    formData.fields.add(MapEntry("saveDirectory", configs["saveDirectory"]));
+    formData.files.add(MapEntry(
+        configs["fileName"],
+        MultipartFile.fromBytes(
+          fileBytes,
+          filename: configs["fileName"],
+        )));
+
+    return await sender.post(
+      "http://$serverAddress$address",
+      data: formData,
+      onSendProgress: (count, total) {
+        apiProvider.uploadStatus[configs!["fileName"]] = (count / total) * 100;
+      },
+    ).catchError(
+      (error) => Response(
+        statusCode: 504,
+        data: {"message": error == DioException ? error.message : error.toString()},
+        requestOptions: RequestOptions(),
+      ),
+    );
   }
 
   ///Returns true if no error occurs, fatal erros return to home screen
@@ -148,28 +197,33 @@ class WebServer {
       //Temporary Banned
       case 413:
         checkFatal();
-        Dialogs.alert(context, title: "Temporary Banned", message: jsonDecode(response.body)["message"]);
+        Dialogs.alert(context, title: "Temporary Banned", message: response.data["message"]);
         return false;
       //Invalid Datas
       case 403:
         checkFatal();
-        Dialogs.alert(context, title: "Invalid Types", message: jsonDecode(response.body)["message"]);
+        Dialogs.alert(context, title: "Invalid Types", message: response.data["message"]);
         return false;
       //Wrong Credentials
       case 401:
         checkFatal();
         Utils.getApiProvider(context, api).changeToken("");
-        Dialogs.alert(context, title: "Wrong Credentials", message: jsonDecode(response.body)["message"]);
+        Dialogs.alert(context, title: "Not Authorized", message: response.data["message"]);
+        return false;
+      case 404:
+        checkFatal();
+        Utils.getApiProvider(context, api).changeToken("");
+        Dialogs.alert(context, title: "Not Found", message: response.data["message"]);
         return false;
       //Server Crashed
       case 500:
         checkFatal();
-        Dialogs.alert(context, title: "Internal Error", message: jsonDecode(response.body)["message"]);
+        Dialogs.alert(context, title: "Internal Error", message: response.data["message"]);
         return false;
       //No connection with the server
       case 504:
         checkFatal();
-        Dialogs.alert(context, title: "No Connection", message: jsonDecode(response.body)["message"]);
+        Dialogs.alert(context, title: "No Connection", message: response.data["message"]);
         return false;
       //User Cancelled
       case 101:

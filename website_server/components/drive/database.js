@@ -9,12 +9,14 @@ class DriveDatabase {
     constructor() {
         try {
             ///Creates the connection with database
-            this.database_connection = new Sequelize('leans_drive', "admin", "secret-password", {
-                host: "DatabaseIP",
+            this.database_connection = new Sequelize('leans_drive', "admin", "password", {
+                host: "databaseip",
                 dialect: "mariadb",
                 logging: false,
                 sync: true,
-                connectTimeout: 10000,
+                dialectOptions: {
+                    connectTimeout: 30000
+                }
             })
             ///With connection instanciate the table
             this.accounts = this.database_connection.define('accounts', {

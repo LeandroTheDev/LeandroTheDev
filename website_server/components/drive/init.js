@@ -24,7 +24,7 @@ http.use((req, res, next) => {
     else ipTimeout[req.ip] += 1;
 
     //If the ip try to communicate 5 times to fast then block it
-    if (ipTimeout[req.ip] > 5) ipTimeout[req.ip] = 99;
+    if (ipTimeout[req.ip] > 50) ipTimeout[req.ip] = 99;
 
     next();
 });
@@ -35,19 +35,19 @@ http.use(require('express').json());
 http.use(cors());
 //Ports for the server
 http.listen(7979, function () {
-    console.log("Drive Listening in 7979");
+    console.log("[Drive] Listening in 7979");
 
     //Declaring Authentication
     const authentication = require('./authentication');
     authentication.instanciateAuthentication(http)
-    console.log("Drive Authentication Instanciated")
+    console.log("[Drive] Authentication Instanciated")
 
     //Declaring Storage
     const storage = require("./storage");
     storage.instanciateDrive(http);
-    console.log("Drive Storage Instanciated");
-});
+    console.log("[Drive] Storage Instanciated");
 
+});
 module.exports = {
     ipTimeout,
 };
