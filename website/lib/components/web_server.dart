@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class WebServer {
-  static const serverAddress = 'localhost:7979';
+  static const serverAddress = 'leandrothedev.duckdns.org:7979';
 
   ///Comunicates the server via http request and return a Map with the server response
   ///
@@ -45,7 +45,7 @@ class WebServer {
       return await sender.get("http://$serverAddress$address", queryParameters: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : error.toString()},
+              data: {"message": error == DioException ? error.message : "No connection"},
               requestOptions: RequestOptions(),
             ),
           );
@@ -67,7 +67,7 @@ class WebServer {
       return await sender.post("http://$serverAddress$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : error.toString()},
+              data: {"message": error == DioException ? error.message : "No connection"},
               requestOptions: RequestOptions(),
             ),
           );
@@ -90,7 +90,7 @@ class WebServer {
       return await sender.delete("http://$serverAddress$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : error.toString()},
+              data: {"message": error == DioException ? error.message : "No connection"},
               requestOptions: RequestOptions(),
             ),
           );
@@ -124,7 +124,7 @@ class WebServer {
     http.Response result = await http.get(
       Uri.http(serverAddress, address, body),
       headers: {"username": apiProvider.username, "token": apiProvider.token},
-    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": "No Connection: $error"}), 504));
+    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": "No connection"}), 504));
     return Response(
       statusCode: result.statusCode,
       data: base64Decode(result.body),
@@ -176,7 +176,7 @@ class WebServer {
     ).catchError(
       (error) => Response(
         statusCode: 504,
-        data: {"message": error == DioException ? error.message : error.toString()},
+        data: {"message": error == DioException ? error.message : "No connection"},
         requestOptions: RequestOptions(),
       ),
     );
