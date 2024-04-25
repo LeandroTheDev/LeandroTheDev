@@ -3,9 +3,12 @@ const path = require('path');
 const multer = require('multer');
 
 class DriveStorage {
+    // Simple check for bad intentions from clients
     static directoryTreatment(directory) {
-        const slashTest = directory.indexOf("../") !== -1 || directory.indexOf("//") !== -1 || directory.indexOf("./") !== -1;
-        return slashTest;
+        const slashTest = !(directory.indexOf("../") !== -1 || directory.indexOf("//") !== -1 || directory.indexOf("./") !== -1);
+        const dotsQuantity = (directory.match(/\./g) || []).length;
+        const letterNumbersTest = /^[a-zA-Z0-9_-]+$/.test(directory.replace(/[\/.]/g, '')) && dotsQuantity <= 1;
+        return slashTest && letterNumbersTest;
     }
 
     async getFolders(req, res) {
@@ -23,7 +26,7 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-        if (DriveStorage.directoryTreatment(directory)) {
+        if (directory.length != 0 && !DriveStorage.directoryTreatment(directory)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;
         }
@@ -71,7 +74,7 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-        if (DriveStorage.directoryTreatment(directory)) {
+        if (!DriveStorage.directoryTreatment(directory)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;
         }
@@ -106,7 +109,7 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-        if (DriveStorage.directoryTreatment(directory)) {
+        if (!DriveStorage.directoryTreatment(directory)) {
             res.status(403).send({ error: true, message: "Invalid Directory, the directory must contain only letter and numbers" });
             return;
         }
@@ -144,7 +147,8 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 403)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
         if (stringsTreatment(typeof item, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
-        if (DriveStorage.directoryTreatment(item)) {
+        console.log(item);
+        if (!DriveStorage.directoryTreatment(item)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;
         }
@@ -190,60 +194,95 @@ class DriveStorage {
     }
 
     async upload(req, res) {
-        function getDateTime() {
-            const now = new Date();
-            const hour = now.getHours();
-            const day = now.getDate();
-            const month = now.getMonth() + 1;
-            const year = now.getFullYear();
-            return `${hour}h/${day}d/${month}m/${year}y`;
-        }
-        const headers = req.headers;
+        // Prepare function to receive any file
+        const uploader = multer({
+            dest: path.resolve(__dirname, '../', '../', 'temp'),
+            limits: {
+                fileSize: 1024 * 1024 * 20000
+            }
+        }).any();
+        // On file receive
+        uploader(req, res, async function (errors) {
+            // Errors treatment
+            if (errors instanceof multer.MulterError) {
+                switch (errors.code) {
+                    case "LIMIT_FILE_SIZE": res.status(414).send({
+                        error: true, message: "Size limit reached"
+                    }); break;
+                    default: res.status(400).send({
+                        error: true, message: "Unkown Error"
+                    }); break;
+                }
+                return;
+            }
+            // Unkown errors
+            else if (errors) {
+                console.log("[Drive] Upload has crashed: " + errors)
+                res.status(400).send({
+                    error: true, message: "Unkown error"
+                });
+                return;
+            }
 
-        //Dependencies
-        const database = require('./database');
-        const {
-            stringsTreatment,
-            tokenCheckTreatment,
-        } = require('./utils');
+            function getDateTime() {
+                const now = new Date();
+                const hour = now.getHours();
+                const day = now.getDate();
+                const month = now.getMonth() + 1;
+                const year = now.getFullYear();
+                return `${hour}h/${day}d/${month}m/${year}y`;
+            }
+            const headers = req.headers;
 
-        //Errors Treatments
-        if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-        if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
+            //Dependencies
+            const database = require('./database');
+            const {
+                stringsTreatment,
+                tokenCheckTreatment,
+            } = require('./utils');
 
-        // Get save directory
-        const directory = req.body.saveDirectory;
+            //Errors Treatments
+            if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
+            if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
 
-        // Swipe all files
-        for (let fileIndex = 0; fileIndex < req.files.length; fileIndex++) {
-            const fileName = req.files[fileIndex]["originalname"];
-
-            //Errors check
+            // Get save directory
+            const directory = req.body.saveDirectory;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, why you are sending me a non string directory?", 401)) return;
-            if (stringsTreatment(typeof fileName, res, "Invalid File Name, why you are sending me a non string file name?", 401)) return;
-            if (DriveStorage.directoryTreatment(directory)) {
+            if (directory.length != 0 && !DriveStorage.directoryTreatment(directory)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
                 return;
             }
 
-            //Converting the file to bytes again
-            const bytes = req.files[fileIndex]["buffer"];
-            //Getting the save path
-            const fileSavePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
-            try {
-                //Saving in the disk
-                fs.writeFileSync(path.join(fileSavePath, fileName), bytes);
-                delete require("./init").ipTimeout[req.ip];
-                console.log("[Drive Storage] " + getDateTime() + " " + directory + "/" + fileName + " received from: " + headers.username)
-                res.status(200).send({
-                    error: false, message: "success"
-                });
-            } catch (error) {
-                res.status(400).send({
-                    error: true, message: error
-                });
+            // Swipe all files
+            for (let fileIndex = 0; fileIndex < req.files.length; fileIndex++) {
+                const fileName = req.files[fileIndex]["originalname"];
+
+                if (!DriveStorage.directoryTreatment(fileName)) {
+                    res.status(401).send({ error: true, message: "The file name is not acceptable, please change it" });
+                    return;
+                }
+
+                //Errors check
+                if (stringsTreatment(typeof fileName, res, "Invalid File Name, why you are sending me a non string file name?", 401)) return;
+
+                //Getting the save path
+                const fileSavePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
+                try {
+                    //Removing from temporary folder and adding to the user folder
+                    fs.renameSync(req.files[fileIndex]["path"], path.join(fileSavePath, fileName));
+
+                    delete require("./init").ipTimeout[req.ip];
+                    console.log("[Drive Storage] " + getDateTime() + " " + directory + "/" + fileName + " received from: " + headers.username)
+                    res.status(200).send({
+                        error: false, message: "success"
+                    });
+                } catch (error) {
+                    res.status(400).send({
+                        error: true, message: error
+                    });
+                }
             }
-        }
+        });
     }
 
     instanciateDrive(http, timeoutFunction) {
@@ -255,7 +294,7 @@ class DriveStorage {
 
         //Post
         http.post('/drive/createfolder', this.createFolder);
-        http.post('/drive/uploadfile', multer().any(), this.upload);
+        http.post('/drive/uploadfile', this.upload);
 
         //Delete
         http.delete('/drive/delete', this.delete);

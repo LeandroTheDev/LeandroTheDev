@@ -1,7 +1,12 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/web_server.dart';
+import 'package:leans/pages/drive/configs.dart';
+import 'package:leans/pages/drive/datas.dart';
 
 class DriveProvider extends ChangeNotifier {
   String _username = "";
@@ -24,25 +29,24 @@ class DriveProvider extends ChangeNotifier {
   String get directory => _directory;
   void changeDirectory(value) => _directory = value;
 
-  Map<String, MemoryImage> _cacheImages = {};
-  Map<String, MemoryImage> get cacheImages => _cacheImages;
-  void changeCacheImages(value) => _cacheImages = value;
-  void addImageToCache(String key, MemoryImage value) => _cacheImages[key] = value;
+  final List<String> _cacheImages = [];
+  List<String> get cacheImages => _cacheImages;
+  Future addImageToCacheStorage(String key, Uint8List value) => DriveDatas.saveSingleImageOnCache(key, value);
+  void addImageToCache(String value) => _cacheImages.add(value);
 
-  Map _cacheVideos = {};
-  Map get cacheVideos => _cacheVideos;
-  void changeCacheVideos(value) => _cacheVideos = value;
+  final List<String> _cacheVideos = [];
+  List<String> get cacheVideos => _cacheVideos;
 
   Map<String, double> _uploadStatus = {};
   Map<String, double> get uploadStatus => _uploadStatus;
   void changeUploadStatus(value) => _uploadStatus = value;
-  void updateKeyUploadStatus(String key, double value) => { _uploadStatus[key] = value, notifyListeners() };
+  void updateKeyUploadStatus(String key, double value) => {_uploadStatus[key] = value, notifyListeners()};
 
   //
   //#region Directory Managment
   //
   /// Ask for the server the new contents from the actual directory
-  Future refreshDirectory(BuildContext context) {
+  Future refreshDirectory(BuildContext context, {bool ignoreImageDownload = false}) {
     DriveUtils.log("---Refreshing directory---");
     return WebServer.sendMessage(context, api: 'drive', address: "/drive/getfolders", body: {"directory": directory}, requestType: "get").then(
       (response) {
@@ -60,21 +64,23 @@ class DriveProvider extends ChangeNotifier {
           changeFolders(data["folders"]);
           changeFiles(data["files"]);
 
-          DriveUtils.log("Loading images from file if exists");
+          if (ignoreImageDownload) DriveUtils.log("Ignoring image download");
 
           // Image Loader
           for (int i = 0; i < files.length; i++) {
-            if (DriveUtils.checkIfIsImage(files[i])) {
+            if (!ignoreImageDownload && DriveUtils.checkIfIsImage(files[i])) {
               DriveUtils.log("Image in file $i detected, downloading thumbnail...");
               // Get image
               WebServer.downloadFile(context, api: "drive", address: "/drive/getfile", body: {"directory": "$directory/${files[i]}"}).then((response) {
                 // Check errors
                 if (WebServer.errorTreatment(context, "drive", response)) {
-                  // Add the image received to image cache
-                  addImageToCache(files[i], MemoryImage(response.data));
-                  notifyListeners();
-
                   DriveUtils.log("Image file $i thumbnail finished downloading");
+                  // Add the image received to image cache
+                  addImageToCacheStorage(files[i], response.data).then((_) {
+                    addImageToCache(files[i]);
+                    notifyListeners();
+                    DriveUtils.log("Image file $i thumbnail saved to the storage");
+                  });
                 }
               });
             }
@@ -95,7 +101,9 @@ class DriveProvider extends ChangeNotifier {
       Dialogs.alert(context, title: "Ops", message: "Something goes wrong when you try to change the directory, if the error persist please contact LeandroTheDev");
     }
     _directory += "/$folderName";
-    refreshDirectory(context);
+    cacheImages.clear();
+    cacheVideos.clear();
+    DriveDatas.clearData().then((value) => refreshDirectory(context));
   }
 
   /// Go to previous directory and refresh the directories
@@ -107,7 +115,9 @@ class DriveProvider extends ChangeNotifier {
     } catch (error) {
       return;
     }
-    refreshDirectory(context);
+    cacheImages.clear();
+    cacheVideos.clear();
+    DriveDatas.clearData().then((value) => refreshDirectory(context));
   }
 
   /// Returns the final part of the directory
@@ -124,7 +134,7 @@ class DriveProvider extends ChangeNotifier {
   createFolder(BuildContext context) {
     Dialogs.typeInput(context).then(
       (folderName) => {
-        WebServer.sendMessage(context, api: "drive", address: 'drive/createfolder', body: {"directory": "$_directory/$folderName"}).then(
+        WebServer.sendMessage(context, api: "drive", address: '/drive/createfolder', body: {"directory": "$_directory/$folderName"}).then(
           (response) => {
             //Check errors
             if (WebServer.errorTreatment(context, "drive", response)) refreshDirectory(context),
@@ -142,7 +152,7 @@ class DriveProvider extends ChangeNotifier {
           WebServer.sendMessage(context, api: "drive", address: '/drive/delete', body: {"item": "$_directory/$itemName"}, requestType: "delete").then(
             (response) => {
               //Check errors
-              if (WebServer.errorTreatment(context, "drive", response)) refreshDirectory(context),
+              if (WebServer.errorTreatment(context, "drive", response)) refreshDirectory(context, ignoreImageDownload: true),
             },
           ),
       },
@@ -155,22 +165,30 @@ class DriveProvider extends ChangeNotifier {
   //
   //#region Directory Data
   //
-
   /// Get the image thumbnail widget by the file name,
   /// if not exist yet will return a progress indicator widget
-  Widget getImageThumbnail(String fileName) {
-    if (_cacheImages[fileName] == null) {
-      return const CircularProgressIndicator();
-    } else {
-      return Image(image: _cacheImages[fileName]!);
-    }
+  Future<Image> getImageThumbnail(String fileName, Size screenSize) async {
+    if (!DriveUtils.checkIfIsImage(fileName)) return Future.error("Not any image");
+    if (!cacheImages.contains(fileName)) return Future.error("File doesn't contains any image");
+    // A little await to consume less cpu
+    await Future.delayed(Durations.short4);
+    return DriveDatas.getSingleImageOnCache(fileName).then(
+      // Another await for consume less cpu
+      (imageBytes) => Future.delayed(Durations.short4).then(
+        (_) => Image(
+          image: MemoryImage(imageBytes),
+          height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+          width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+        ),
+      ),
+    );
   }
 
   /// Upload a file to the actual directory
   uploadFile(BuildContext context) {
     try {
       Dialogs.loading(context);
-      FilePicker.platform.pickFiles(allowMultiple: true).then(
+      FilePicker.platform.pickFiles(allowMultiple: true, withReadStream: true).then(
         (result) {
           if (result != null) {
             DriveUtils.log("Total files to be send: ${result.files.length}");
@@ -179,9 +197,7 @@ class DriveProvider extends ChangeNotifier {
             int filesCompleted = 0;
             for (int i = 0; i < result.files.length; i++) {
               try {
-                // Null bytes treatment
-                if (result.files[i].bytes == null) throw "File not found";
-                print(result.files[i].bytes?.length);
+                if (result.files[i].readStream == null) throw "File not found";
 
                 // Update upload status for the file
                 _uploadStatus[result.files[i].name] = 0;
@@ -192,22 +208,27 @@ class DriveProvider extends ChangeNotifier {
                   context,
                   api: "drive",
                   address: '/drive/uploadfile',
-                  fileBytes: result.files[i].bytes!,
+                  fileStream: result.files[i].readStream!,
+                  fileSize: result.files[i].size,
                   configs: {"fileName": result.files[i].name, "saveDirectory": directory},
                 ).then(
                   (response) {
                     filesCompleted++;
 
                     // Update upload status for the file
-                    _uploadStatus[result.files[i].name] = 100;
+                    if (response.statusCode != 200)
+                      updateKeyUploadStatus(result.files[i].name, -1);
+                    else
+                      _uploadStatus[result.files[i].name] = 100;
 
                     DriveUtils.log("File send finished with code: ${response.statusCode}, remaining: $filesCompleted/${result.files.length}");
 
+                    response.data["message"] = "Cannot send ${result.files[i].name}, reason: ${response.data["message"]}";
                     // Check for errors
-                    WebServer.errorTreatment(context, "drive", response);
-
-                    // If the total files finished, refresh the directory
-                    if (filesCompleted == result.files.length) refreshDirectory(context);
+                    if (WebServer.errorTreatment(context, "drive", response)) {
+                      // If the total files finished, refresh the directory
+                      if (filesCompleted == result.files.length) refreshDirectory(context);
+                    }
                   },
                 );
               } catch (error) {
@@ -215,9 +236,8 @@ class DriveProvider extends ChangeNotifier {
                 Dialogs.alert(context, title: "Error", message: "Cannot send the file: ${result.files[i].name} reason: $error");
               }
             }
-          } else {
+          } else
             Navigator.pop(context);
-          }
         },
       );
     } catch (error) {

@@ -15,6 +15,7 @@ dependencies:
   provider: ^6.1.1 # Communications between classes
   file_picker: ^6.1.1 # Native pick files
   path: ^1.8.3 # Native path
+  shared_preferences: ^2.2.3 # Local storage
 
 dev_dependencies:
   flutter_test:

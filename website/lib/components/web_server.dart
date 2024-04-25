@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 //Dependencies
 import 'package:dio/dio.dart';
@@ -9,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 //Packages
 import 'package:flutter/material.dart';
+import 'package:leans/main.dart';
 
 class WebServer {
   static const serverAddress = 'leandrothedev.duckdns.org:7979';
@@ -17,12 +17,12 @@ class WebServer {
   ///
   ///Example Post:
   ///```dart
-  ///sendServerMessage("/login", { username: "test", password: "123" })
+  ///sendServerMessage(context, address: "/login", "drive", body: { "username": "test", "password": "123" } );
   ///```
   ///
   ///Example Get:
   ///```dart
-  ///sendServerMessage("/status")
+  //////sendServerMessage(context, address: "/status", "drive", body: { "query": "test" } );
   ///```
   static Future<Response> sendMessage(
     BuildContext context, {
@@ -45,7 +45,13 @@ class WebServer {
       return await sender.get("http://$serverAddress$address", queryParameters: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : "No connection"},
+              data: {
+                "message": error == DioException
+                    ? error.message
+                    : isDebug
+                        ? error.toString()
+                        : "No connection"
+              },
               requestOptions: RequestOptions(),
             ),
           );
@@ -67,7 +73,13 @@ class WebServer {
       return await sender.post("http://$serverAddress$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : "No connection"},
+              data: {
+                "message": error == DioException
+                    ? error.message
+                    : isDebug
+                        ? error.toString()
+                        : "No connection"
+              },
               requestOptions: RequestOptions(),
             ),
           );
@@ -90,7 +102,13 @@ class WebServer {
       return await sender.delete("http://$serverAddress$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
-              data: {"message": error == DioException ? error.message : "No connection"},
+              data: {
+                "message": error == DioException
+                    ? error.message
+                    : isDebug
+                        ? error.toString()
+                        : "No connection"
+              },
               requestOptions: RequestOptions(),
             ),
           );
@@ -112,6 +130,12 @@ class WebServer {
     }
   }
 
+  ///Download a file from the server via get request, usable for low size files
+  ///
+  ///Example:
+  ///```dart
+  ///downloadFile(context, address: "/getFile", api: "drive", body: { "fileDirectory": "myFile.txt" } );
+  ///```
   static Future<Response> downloadFile(
     BuildContext context, {
     required String address,
@@ -119,12 +143,11 @@ class WebServer {
     Map<String, dynamic>? body,
   }) async {
     final apiProvider = Utils.getApiProvider(context, api);
-
     // Receive download
     http.Response result = await http.get(
       Uri.http(serverAddress, address, body),
       headers: {"username": apiProvider.username, "token": apiProvider.token},
-    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": "No connection"}), 504));
+    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": isDebug ? error.toString() : "No connection"}), 504));
     return Response(
       statusCode: result.statusCode,
       data: base64Decode(result.body),
@@ -140,7 +163,8 @@ class WebServer {
     context, {
     required String address,
     required String api,
-    required Uint8List fileBytes,
+    required Stream<List<int>> fileStream,
+    required int fileSize,
     String fileName = "temp",
     Map? configs,
   }) async {
@@ -162,24 +186,36 @@ class WebServer {
     // Creating data
     FormData formData = FormData();
     formData.fields.add(MapEntry("saveDirectory", configs["saveDirectory"]));
-    formData.files.add(MapEntry(
+    formData.files.add(
+      MapEntry(
         configs["fileName"],
-        MultipartFile.fromBytes(
-          fileBytes,
+        MultipartFile.fromStream(
+          () => fileStream,
+          fileSize,
           filename: configs["fileName"],
-        )));
-
-    return await sender.post(
-      "http://$serverAddress$address",
-      data: formData,
-      onSendProgress: (count, total) => apiProvider.updateKeyUploadStatus(configs!["fileName"], (count / total) * 100),
-    ).catchError(
-      (error) => Response(
-        statusCode: 504,
-        data: {"message": error == DioException ? error.message : "No connection"},
-        requestOptions: RequestOptions(),
+        ),
       ),
     );
+
+    return await sender
+        .post(
+          "http://$serverAddress$address",
+          data: formData,
+          onSendProgress: (count, total) => apiProvider.updateKeyUploadStatus(configs!["fileName"], (count / total) * 100),
+        )
+        .catchError(
+          (error) => Response(
+            statusCode: 504,
+            data: {
+              "message": error == DioException
+                  ? error.message
+                  : isDebug
+                      ? error.toString()
+                      : "No connection"
+            },
+            requestOptions: RequestOptions(),
+          ),
+        );
   }
 
   ///Returns true if no error occurs, fatal erros return to home screen
@@ -192,6 +228,11 @@ class WebServer {
     }
 
     switch (response.statusCode) {
+      // Limit Overflow
+      case 414:
+        checkFatal();
+        Dialogs.alert(context, title: "Limit Overflow", message: response.data["message"]);
+        return false;
       //Temporary Banned
       case 413:
         checkFatal();
@@ -208,6 +249,7 @@ class WebServer {
         Utils.getApiProvider(context, api).changeToken("");
         Dialogs.alert(context, title: "Not Authorized", message: response.data["message"]);
         return false;
+      // Not Found
       case 404:
         checkFatal();
         Utils.getApiProvider(context, api).changeToken("");
@@ -221,7 +263,7 @@ class WebServer {
       //No connection with the server
       case 504:
         checkFatal();
-        Dialogs.alert(context, title: "No Connection", message: response.data["message"]);
+        Dialogs.alert(context, title: "No connection", message: response.data["message"]);
         return false;
       //User Cancelled
       case 101:

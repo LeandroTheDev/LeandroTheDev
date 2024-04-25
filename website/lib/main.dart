@@ -4,6 +4,8 @@ import 'package:leans/pages/drive/provider.dart';
 import 'package:leans/pages/protify/home.dart';
 import 'package:provider/provider.dart';
 
+const isDebug = !bool.fromEnvironment('dart.vm.product');
+
 void main() {
   runApp(
     MultiProvider(
@@ -29,6 +31,7 @@ class Leans extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Leans',
       theme: ThemeData(
           //--------------
