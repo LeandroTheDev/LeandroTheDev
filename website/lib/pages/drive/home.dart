@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:leans/main.dart';
 import 'package:leans/pages/drive/configs.dart';
+import 'package:leans/pages/drive/itemviewer.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:provider/provider.dart';
 
@@ -216,7 +216,19 @@ class _DriveHomeState extends State<DriveHome> {
                           children: [
                             // Icon and Name
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DriveItemViewer(
+                                    type: DriveUtils.checkIfIsImage(driveProvider.files[index])
+                                        ? "image"
+                                        : DriveUtils.checkIfIsVideo(driveProvider.files[index])
+                                            ? "video"
+                                            : "file",
+                                    fileName: driveProvider.files[index],
+                                  ),
+                                ),
+                              ),
                               child: Row(children: [
                                 //Icon
                                 SizedBox(
@@ -228,8 +240,10 @@ class _DriveHomeState extends State<DriveHome> {
                                       builder: (context, future) {
                                         if (future.hasData)
                                           return future.data!;
+                                        else if (future.error == "Is a video")
+                                          return const Icon(Icons.video_file_outlined);
                                         else if (future.error == "Not any image")
-                                          return const Icon(Icons.file_copy);
+                                          return const Icon(Icons.file_present);
                                         else
                                           return const CircularProgressIndicator();
                                       },

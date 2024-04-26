@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:leans/main.dart';
 
 class WebServer {
-  static const serverAddress = 'leandrothedev.duckdns.org:7979';
+  static const serverAddress = 'localhost:7979';
 
   ///Comunicates the server via http request and return a Map with the server response
   ///

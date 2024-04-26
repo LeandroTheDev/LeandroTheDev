@@ -12,6 +12,10 @@ class DriveConfigs {
     "itemprogresswidth": 25,
     "itemtextheight": 50,
     "itemtextwidth": 0,
+    "videoplayerheight": 0,
+    "videoplayerwidth": 0,
+    "videosoundheight": 150,
+    "videosoundwidth": 20,
   };
 
   static double getWidgetSize({required String widget, required String type, required Size screenSize}) {

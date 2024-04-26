@@ -3,11 +3,12 @@ const path = require('path');
 const multer = require('multer');
 
 class DriveStorage {
+    static videoRequests = {};
     // Simple check for bad intentions from clients
     static directoryTreatment(directory) {
         const slashTest = !(directory.indexOf("../") !== -1 || directory.indexOf("//") !== -1 || directory.indexOf("./") !== -1);
         const dotsQuantity = (directory.match(/\./g) || []).length;
-        const letterNumbersTest = /^[a-zA-Z0-9_-]+$/.test(directory.replace(/[\/.]/g, '')) && dotsQuantity <= 1;
+        const letterNumbersTest = /^[a-zA-Z0-9_ -]+$/.test(directory.replace(/[\/.]/g, '')) && dotsQuantity <= 1;
         return slashTest && letterNumbersTest;
     }
 
@@ -84,6 +85,97 @@ class DriveStorage {
         let filePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
         //Returning the image
         res.status(200).send(fs.readFileSync(filePath).toString('base64'));
+    }
+
+    async requestVideo(req, res) {
+        const directory = req.query.directory;
+        const headers = req.headers;
+
+        // Authentication
+        {
+            //Dependencies
+            const database = require('./database');
+            const {
+                stringsTreatment,
+                tokenCheckTreatment,
+            } = require('./utils');
+
+            //Errors Treatments
+            if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
+            if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
+            if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
+            if (!DriveStorage.directoryTreatment(directory)) {
+                res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
+                return;
+            }
+            delete require("./init").ipTimeout[req.ip];
+        }
+
+        // Undefined check
+        if (DriveStorage.videoRequests[req.ip] == undefined) DriveStorage.videoRequests[req.ip] = {};
+
+        console.log("[Drive] " + headers.username + " request a video from: " + directory);
+        // If already exists just increase the expiration from requests
+        if (DriveStorage.videoRequests[req.ip][directory] != undefined) {
+            DriveStorage.videoRequests[req.ip][directory]["expirationIn"] = 100;
+            res.status(200).send({ error: false, message: "The video has been requested, you can now access it" });
+            return;
+        }
+        // Creates a request for the ip address
+        else DriveStorage.videoRequests[req.ip][directory] = {
+            expirationIn: 100,
+            username: headers.username
+        };
+
+        // Reduce expiration every 2 seconds
+        let id = setInterval(function () {
+            // If request if empty just clear this interval
+            if (DriveStorage.videoRequests[req.ip] == undefined || DriveStorage.videoRequests[req.ip][directory] == undefined) {
+                clearInterval(id);
+                return;
+            }
+            // Reduce expiration
+            DriveStorage.videoRequests[req.ip][directory]["expirationIn"] -= 1;
+            //  Remove if empty
+            if (DriveStorage.videoRequests[req.ip][directory]["expirationIn"] <= 0) delete DriveStorage.videoRequests[req.ip][directory];
+            if (Object.keys(DriveStorage.videoRequests[req.ip]) == 0) delete DriveStorage.videoRequests[req.ip];
+        }, 2000);
+
+        res.status(200).send({ error: false, message: "The video has been requested, you can now access it" });
+    }
+
+    async getVideo(req, res) {
+        const directory = req.query.directory;
+
+        // No video requests
+        if (DriveStorage.videoRequests[req.ip] == undefined || DriveStorage.videoRequests[req.ip][directory] == undefined) {
+            console.log("[Drive] Ilegal video request from: " + req.ip);
+            res.status(401).send({ error: true, message: "You don't have any video requests" });
+            return;
+        }
+
+        //Getting the video path
+        let filePath = path.resolve(__dirname, '../', '../', 'drive', DriveStorage.videoRequests[req.ip][directory]["username"]) + directory;
+
+        if (!fs.existsSync(filePath)) {
+            res.status(404).send({ error: true, message: "This video no longs exists" });
+            return;
+        }
+
+        // Change content type from header
+        res.setHeader('content-type', 'video/mp4');
+
+        // Creates a stream based on file
+        const stream = fs.createReadStream(filePath);
+
+        // Error treatment
+        stream.on('error', (error) => {
+            console.log("[Drive] Error reading the file: " + directory + " from: " + DriveStorage.videoRequests[req.ip][directory]["username"] + " reason: " + error);
+            res.status(500).send({ error: true, message: "Cannot read the file, contact LeandroTheDev" });
+        });
+
+        // Send the data for user
+        stream.pipe(res);
     }
 
     async createFolder(req, res) {
@@ -291,6 +383,8 @@ class DriveStorage {
         //Get
         http.get('/drive/getfolders', this.getFolders);
         http.get('/drive/getfile', this.getFile);
+        http.get('/drive/requestVideo', this.requestVideo);
+        http.get('/drive/getvideo', this.getVideo);
 
         //Post
         http.post('/drive/createfolder', this.createFolder);

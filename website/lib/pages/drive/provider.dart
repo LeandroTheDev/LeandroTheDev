@@ -168,7 +168,13 @@ class DriveProvider extends ChangeNotifier {
   /// Get the image thumbnail widget by the file name,
   /// if not exist yet will return a progress indicator widget
   Future<Image> getImageThumbnail(String fileName, Size screenSize) async {
-    if (!DriveUtils.checkIfIsImage(fileName)) return Future.error("Not any image");
+    if (!DriveUtils.checkIfIsImage(fileName)) {
+      if (DriveUtils.checkIfIsVideo(fileName))
+        return Future.error("Is a video");
+      else
+        return Future.error("Not any image");
+    }
+    ;
     if (!cacheImages.contains(fileName)) return Future.error("File doesn't contains any image");
     // A little await to consume less cpu
     await Future.delayed(Durations.short4);
@@ -251,10 +257,18 @@ class DriveProvider extends ChangeNotifier {
 
 class DriveUtils {
   /// Simple check the last string characters for matching files
-  static checkIfIsImage(String fileName) {
+  static bool checkIfIsImage(String fileName) {
     if (fileName.endsWith(".png")) return true;
     if (fileName.endsWith(".jpg")) return true;
     if (fileName.endsWith(".jpeg")) return true;
+    return false;
+  }
+
+  /// Simple check the last string characters for matching files
+  static bool checkIfIsVideo(String fileName) {
+    if (fileName.endsWith(".mp4")) return true;
+    if (fileName.endsWith(".mkv")) return true;
+    if (fileName.endsWith(".avi")) return true;
     return false;
   }
 
