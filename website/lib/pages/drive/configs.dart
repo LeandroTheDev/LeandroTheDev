@@ -6,6 +6,8 @@ class DriveConfigs {
     "buttonwidth": 100,
     "barheight": 50,
     "barwidth": 0,
+    "nextheight": 50,
+    "nextwidth": 0,
     "itemiconheight": 50,
     "itemiconwidth": 50,
     "itemprogressheight": 25,

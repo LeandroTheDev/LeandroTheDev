@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +30,7 @@ class DriveProvider extends ChangeNotifier {
 
   final List<String> _cacheImages = [];
   List<String> get cacheImages => _cacheImages;
-  Future addImageToCacheStorage(String key, Uint8List value) => DriveDatas.saveSingleImageOnCache(key, value);
-  void addImageToCache(String value) => _cacheImages.add(value);
+  Future addFileToCache(String key, List<int> value) => DriveDatas.saveSingleImageOnCache(key, value);
 
   final List<String> _cacheVideos = [];
   List<String> get cacheVideos => _cacheVideos;
@@ -41,6 +39,31 @@ class DriveProvider extends ChangeNotifier {
   Map<String, double> get uploadStatus => _uploadStatus;
   void changeUploadStatus(value) => _uploadStatus = value;
   void updateKeyUploadStatus(String key, double value) => {_uploadStatus[key] = value, notifyListeners()};
+
+  int _itemViewerPosition = 0;
+  int get itemViewerPosition => _itemViewerPosition;
+  void changeItemViewerPosition(BuildContext context, int value) {
+    // 0 treatment
+    if (value < 0) return;
+    int previousPosition = _itemViewerPosition;
+    _itemViewerPosition = value;
+    // Reach max
+    if (showFolders().isEmpty && showFiles().isEmpty) {
+      _itemViewerPosition = previousPosition;
+      return;
+    } else if (showFiles().isNotEmpty) {
+      // Clean internal strorage
+      DriveDatas.clearData();
+      // Download images
+      downloadImagesCache(context);
+    }
+
+    notifyListeners();
+  }
+
+  int _itemViewerQuantity = 0;
+  int get itemViewerQuantity => _itemViewerQuantity;
+  void changeItemViewerQuantity(int value) => _itemViewerQuantity = value;
 
   //
   //#region Directory Managment
@@ -64,31 +87,35 @@ class DriveProvider extends ChangeNotifier {
           changeFolders(data["folders"]);
           changeFiles(data["files"]);
 
-          if (ignoreImageDownload) DriveUtils.log("Ignoring image download");
-
-          // Image Loader
-          for (int i = 0; i < files.length; i++) {
-            if (!ignoreImageDownload && DriveUtils.checkIfIsImage(files[i])) {
-              DriveUtils.log("Image in file $i detected, downloading thumbnail...");
-              // Get image
-              WebServer.downloadFile(context, api: "drive", address: "/drive/getfile", body: {"directory": "$directory/${files[i]}"}).then((response) {
-                // Check errors
-                if (WebServer.errorTreatment(context, "drive", response)) {
-                  DriveUtils.log("Image file $i thumbnail finished downloading");
-                  // Add the image received to image cache
-                  addImageToCacheStorage(files[i], response.data).then((_) {
-                    addImageToCache(files[i]);
-                    notifyListeners();
-                    DriveUtils.log("Image file $i thumbnail saved to the storage");
-                  });
-                }
-              });
-            }
-          }
+          if (ignoreImageDownload)
+            DriveUtils.log("Ignoring image download");
+          else
+            downloadImagesCache(context);
         }
         notifyListeners();
       },
     );
+  }
+
+  List showFolders() {
+    int startNumber = _itemViewerQuantity * _itemViewerPosition;
+    List foldersView = [];
+    for (startNumber; startNumber < _folders.length; startNumber++) {
+      if (foldersView.length >= _itemViewerQuantity) break;
+      foldersView.add(_folders[startNumber]);
+    }
+    return foldersView;
+  }
+
+  List showFiles() {
+    List foldersView = showFolders();
+    int startNumber = _itemViewerQuantity * _itemViewerPosition;
+    List filesView = [];
+    for (startNumber; startNumber < _files.length; startNumber++) {
+      if ((filesView.length + foldersView.length) >= _itemViewerQuantity) break;
+      filesView.add(_files[startNumber]);
+    }
+    return filesView;
   }
 
   /// Change the actual directory and refresh the directories
@@ -137,7 +164,7 @@ class DriveProvider extends ChangeNotifier {
         WebServer.sendMessage(context, api: "drive", address: '/drive/createfolder', body: {"directory": "$_directory/$folderName"}).then(
           (response) => {
             //Check errors
-            if (WebServer.errorTreatment(context, "drive", response)) refreshDirectory(context),
+            if (WebServer.errorTreatment(context, "drive", response)) refreshDirectory(context, ignoreImageDownload: true),
           },
         )
       },
@@ -174,7 +201,6 @@ class DriveProvider extends ChangeNotifier {
       else
         return Future.error("Not any image");
     }
-    ;
     if (!cacheImages.contains(fileName)) return Future.error("File doesn't contains any image");
     // A little await to consume less cpu
     await Future.delayed(Durations.short4);
@@ -248,6 +274,33 @@ class DriveProvider extends ChangeNotifier {
       );
     } catch (error) {
       Dialogs.alert(context, message: "Cannot upload files, reason: $error");
+    }
+  }
+
+  /// Download images from showFiles function and save to cache image
+  /// listeners is refreshed every download and save
+  void downloadImagesCache(BuildContext context) {
+    List filesView = showFiles();
+    // Image Loader
+    for (int i = 0; i < filesView.length; i++) {
+      if (DriveUtils.checkIfIsImage(filesView[i])) {
+        DriveUtils.log("Image in file $i detected, downloading thumbnail...");
+        // Get image
+        WebServer.downloadFile(context, api: "drive", address: "/drive/getfile", body: {"directory": "$directory/${filesView[i]}", "fileName": filesView[i]}).then((response) {
+          // Check errors
+          if (WebServer.errorTreatment(context, "drive", response)) {
+            // Add to cache images variable
+            _cacheImages.add(filesView[i]);
+
+            // Refresh page
+            notifyListeners();
+
+            DriveUtils.log("Image $i downloaded and saved");
+          }
+        }).onError((error, stackTrace) {
+          Dialogs.alert(context, title: "Thumbnail Error", message: "Cannot download the thumbnail, reason: $error");
+        });
+      }
     }
   }
   //

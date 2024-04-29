@@ -83,8 +83,18 @@ class DriveStorage {
 
         //Getting the image path
         let filePath = path.resolve(__dirname, '../', '../', 'drive', headers.username) + directory;
-        //Returning the image
-        res.status(200).send(fs.readFileSync(filePath).toString('base64'));
+
+        // Getting the file stream
+        const stream = fs.createReadStream(filePath);
+
+        // Error treatment
+        stream.on('error', (err) => {
+            console.error('[Drive] Error reading the file ' + filePath + ' caused by: ' + headers.username + " reason: " + err);
+            res.status(500).send('File read error');
+        });
+
+        // Send file
+        stream.pipe(res);
     }
 
     async requestVideo(req, res) {
@@ -239,7 +249,6 @@ class DriveStorage {
         if (stringsTreatment(typeof headers.username, res, "Invalid Username, why you are sending any invalid username?", 403)) return;
         if (tokenCheckTreatment(headers.token, await database.getUserToken(headers.username), res)) return;
         if (stringsTreatment(typeof item, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
-        console.log(item);
         if (!DriveStorage.directoryTreatment(item)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;

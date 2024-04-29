@@ -58,6 +58,7 @@ class DriveDatas {
   /// Stores the image bytes into localstorage
   static Future saveSingleImageOnCache(String imageName, List<int> bytes) {
     bytesOnImageCache += bytes.length;
+    if (bytesOnImageCache >= 1000000) return Future.error("Image Storage Full");
     return saveData("cacheImages_$imageName", bytes.map((intItem) => intItem.toString()).toList());
   }
 

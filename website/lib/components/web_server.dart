@@ -1,10 +1,10 @@
-import 'dart:convert';
+import 'dart:async';
+import 'dart:typed_data';
 
 //Dependencies
 import 'package:dio/dio.dart';
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/utils.dart';
-import 'package:http/http.dart' as http;
 
 //Packages
 import 'package:flutter/material.dart';
@@ -130,7 +130,7 @@ class WebServer {
     }
   }
 
-  ///Download a file from the server via get request, usable for low size files
+  ///Download a file from the server via get stream
   ///
   ///Example:
   ///```dart
@@ -142,17 +142,86 @@ class WebServer {
     required String api,
     Map<String, dynamic>? body,
   }) async {
+    Dio receiver = Dio();
     final apiProvider = Utils.getApiProvider(context, api);
-    // Receive download
-    http.Response result = await http.get(
-      Uri.http(serverAddress, address, body),
-      headers: {"username": apiProvider.username, "token": apiProvider.token},
-    ).catchError((error) => http.Response(jsonEncode({"error": true, "message": isDebug ? error.toString() : "No connection"}), 504));
-    return Response(
-      statusCode: result.statusCode,
-      data: base64Decode(result.body),
-      requestOptions: RequestOptions(),
-    );
+
+    receiver.options.headers = {"username": apiProvider.username, "token": apiProvider.token};
+    receiver.options.validateStatus = (status) {
+      status ??= 504;
+      return status < 500;
+    };
+    receiver.options.responseType = ResponseType.stream;
+
+    try {
+      // Request stream download from the server
+      Response response = await receiver.get("http://$serverAddress$address", queryParameters: body).catchError(
+            (error) => Response(
+              statusCode: 504,
+              data: {"message": isDebug ? "Cannot download file, reason: $error" : "Cannot connect to the server"},
+              requestOptions: RequestOptions(),
+            ),
+          );
+
+      // Request success
+      if (response.statusCode == 200 && response.data is ResponseBody) {
+        Completer<Response> completer = Completer<Response>();
+        // Receive stream
+        Stream<Uint8List> fileStream = response.data!.stream;
+
+        // Bytes from the file
+        List<int> fileBytes = [];
+
+        // Process the stream
+        fileStream.listen(
+          // Saving in memory
+          (data) => fileBytes.addAll(data),
+          onDone: () async {
+            try {
+              // Saving image from memory to cache
+              await apiProvider.addFileToCache(body!["fileName"], fileBytes);
+              // Finish
+              completer.complete(
+                Response(
+                  statusCode: 200,
+                  data: {"message": "Success"},
+                  requestOptions: RequestOptions(),
+                ),
+              );
+            } catch (error) {
+              // Error
+              completer.complete(
+                Response(
+                  statusCode: 504,
+                  data: {"message": "Cannot save image on cache, reason: $error"},
+                  requestOptions: RequestOptions(),
+                ),
+              );
+            }
+          },
+          onError: (error) => completer.complete(
+            Response(
+              statusCode: 504,
+              data: {"message": isDebug ? "$error" : "Any error occurs when receiving the file"},
+              requestOptions: RequestOptions(),
+            ),
+          ),
+        );
+        return completer.future;
+      } else if (response.data is! ResponseBody)
+        return Response(
+          statusCode: 504,
+          data: {"message": isDebug ? "The server returned a invalid stream to get file: ${response.data?.runtimeType}, value: ${response.data}" : "Cannot connect to the server"},
+          requestOptions: RequestOptions(),
+        );
+      else
+        return response;
+    } catch (error) {
+      return Response(
+        statusCode: 504,
+        data: {"message": isDebug ? "$error" : "Cannot connect to the server"},
+        requestOptions: RequestOptions(),
+      );
+    }
   }
 
   /// Send a file to the drive
