@@ -6,7 +6,6 @@ import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:leans/main.dart';
 import 'package:leans/pages/drive/configs.dart';
-import 'package:leans/pages/drive/datas.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
@@ -75,7 +74,7 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
             DriveUtils.log("Request success, initializing Video Player");
             // Listening to the server
             videoPlayer = VideoPlayerController.networkUrl(
-              Uri.parse("http://${WebServer.serverAddress}/drive/getvideo?directory=$videoDirectory"),
+              Uri.parse("http://${WebServer.serverAddress}/drive/getVideo?directory=$videoDirectory"),
               httpHeaders: {
                 "username": driveProvider.username,
                 "token": driveProvider.token,
@@ -341,20 +340,15 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
             ),
           ),
           body: Center(
-            child: FutureBuilder(
-              future: DriveDatas.getSingleImageOnCache(widget.fileName),
-              builder: (context, future) => future.hasData
-                  ? PhotoView(
-                      imageProvider: MemoryImage(future.data!),
-                      backgroundDecoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
-                    )
-                  : const Center(
-                      child: SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
+            child: PhotoView(
+              imageProvider: NetworkImage(
+                "http://${WebServer.serverAddress}/drive/getImage?directory=${driveProvider.directory}/${widget.fileName}",
+                headers: {
+                  "username": driveProvider.username,
+                  "token": driveProvider.token,
+                },
+              ),
+              backgroundDecoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
             ),
           ),
         );

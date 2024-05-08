@@ -30,6 +30,7 @@ class DriveProvider extends ChangeNotifier {
 
   final List<String> _cacheImages = [];
   List<String> get cacheImages => _cacheImages;
+
   Future addFileToCache(String key, List<int> value) => DriveDatas.saveSingleImageOnCache(key, value);
 
   final List<String> _cacheVideos = [];
@@ -201,18 +202,17 @@ class DriveProvider extends ChangeNotifier {
       else
         return Future.error("Not any image");
     }
-    if (!cacheImages.contains(fileName)) return Future.error("File doesn't contains any image");
-    // A little await to consume less cpu
-    await Future.delayed(Durations.short4);
-    return DriveDatas.getSingleImageOnCache(fileName).then(
-      // Another await for consume less cpu
-      (imageBytes) => Future.delayed(Durations.short4).then(
-        (_) => Image(
-          image: MemoryImage(imageBytes),
-          height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
-          width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
-        ),
-      ),
+    final imageDirectory = "$directory/$fileName";
+    if (!cacheImages.contains(imageDirectory)) return Future.error("File doesn't contains any image");
+    return Image.network(
+      "http://${WebServer.serverAddress}/drive/getImage?directory=$imageDirectory",
+      height: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+      width: DriveConfigs.getWidgetSize(widget: "itemicon", type: "height", screenSize: screenSize),
+      headers: {
+        "username": username,
+        "token": token,
+      },
+      errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported),
     );
   }
 
@@ -285,20 +285,28 @@ class DriveProvider extends ChangeNotifier {
     for (int i = 0; i < filesView.length; i++) {
       if (DriveUtils.checkIfIsImage(filesView[i])) {
         DriveUtils.log("Image in file $i detected, downloading thumbnail...");
-        // Get image
-        WebServer.downloadFile(context, api: "drive", address: "/drive/getfile", body: {"directory": "$directory/${filesView[i]}", "fileName": filesView[i]}).then((response) {
+        // Request image read
+        WebServer.sendMessage(
+          context,
+          address: "/drive/requestImage",
+          api: "drive",
+          body: {
+            "directory": "$directory/${filesView[i]}",
+          },
+          requestType: "get",
+        ).then((response) {
           // Check errors
           if (WebServer.errorTreatment(context, "drive", response)) {
             // Add to cache images variable
-            _cacheImages.add(filesView[i]);
+            _cacheImages.add("$directory/${filesView[i]}");
 
             // Refresh page
             notifyListeners();
 
-            DriveUtils.log("Image $i downloaded and saved");
+            DriveUtils.log("Image $i request and saved");
           }
         }).onError((error, stackTrace) {
-          Dialogs.alert(context, title: "Thumbnail Error", message: "Cannot download the thumbnail, reason: $error");
+          Dialogs.alert(context, title: "Image Error", message: "Cannot request the image, reason: $error");
         });
       }
     }
