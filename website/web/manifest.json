@@ -1,11 +1,11 @@
 {
-    "name": "Lean's Website",
-    "short_name": "leans",
+    "name": "website",
+    "short_name": "website",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#3e4b54",
+    "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "LeandroTheDev Portfolio.",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

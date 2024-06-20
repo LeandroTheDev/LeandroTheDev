@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leans/pages/drive/home.dart';
 import 'package:leans/pages/drive/provider.dart';
+import 'package:leans/pages/larita/home.dart';
 import 'package:leans/pages/protify/home.dart';
 import 'package:provider/provider.dart';
 
@@ -64,9 +65,18 @@ class Leans extends StatelessWidget {
             color: colors["tertiary"],
           ),
           textTheme: TextTheme(
-            titleLarge: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
-            titleMedium: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
-            titleSmall: TextStyle(color: colors["tertiary"], fontSize: 6, overflow: TextOverflow.ellipsis),
+            titleLarge: TextStyle(
+                color: colors["tertiary"],
+                fontSize: 24,
+                overflow: TextOverflow.ellipsis),
+            titleMedium: TextStyle(
+                color: colors["tertiary"],
+                fontSize: 16,
+                overflow: TextOverflow.ellipsis),
+            titleSmall: TextStyle(
+                color: colors["tertiary"],
+                fontSize: 6,
+                overflow: TextOverflow.ellipsis),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -85,8 +95,14 @@ class Leans extends StatelessWidget {
             ),
           ),
           dialogTheme: DialogTheme(
-            titleTextStyle: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
-            contentTextStyle: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
+            titleTextStyle: TextStyle(
+                color: colors["tertiary"],
+                fontSize: 24,
+                overflow: TextOverflow.ellipsis),
+            contentTextStyle: TextStyle(
+                color: colors["tertiary"],
+                fontSize: 16,
+                overflow: TextOverflow.ellipsis),
             backgroundColor: colors["primary"],
           ),
           dialogBackgroundColor: colors["primary"]),
@@ -94,6 +110,7 @@ class Leans extends StatelessWidget {
         "home": (context) => const HomeScreen(),
         "drive": (context) => const DriveHome(),
         "protify": (context) => const ProtifyHome(),
+        "larita": (context) => const LaritaHome(),
       },
       home: const HomeScreen(),
     );
@@ -128,7 +145,9 @@ class HomeScreen extends StatelessWidget {
                 width: screenSize.width,
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: screenSize.width < 1000 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                  crossAxisAlignment: screenSize.width < 1000
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
                   children: [
                     //Drive Title
                     Text(
@@ -141,7 +160,8 @@ class HomeScreen extends StatelessWidget {
                       width: 110,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, "drive"),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, "drive"),
                           child: Row(
                             children: [
                               const Text("Drive"),
@@ -178,7 +198,8 @@ class HomeScreen extends StatelessWidget {
                       width: 250,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, "protify"),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, "protify"),
                           child: Row(
                             children: [
                               const Text("Protify Demonstration"),
@@ -187,6 +208,45 @@ class HomeScreen extends StatelessWidget {
                                 height: 24,
                                 width: 24,
                                 child: Image.asset("assets/protify/icon.png"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //Larita
+              Container(
+                width: screenSize.width,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: screenSize.width < 1000
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
+                  children: [
+                    //Larita Title
+                    Text(
+                      "Feeling alone? Larita can fix that.",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    //Drive Button
+                    SizedBox(
+                      width: 110,
+                      child: FittedBox(
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              Navigator.pushNamed(context, "larita"),
+                          child: Row(
+                            children: [
+                              const Text("Larita"),
+                              const SizedBox(width: 5),
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Image.asset("assets/larita/icon.png"),
                               ),
                             ],
                           ),

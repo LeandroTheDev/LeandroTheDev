@@ -30,4 +30,6 @@ flutter:
     - assets/drive/
     # Protify
     - assets/protify/
+    # Larita
+    - assets/larita/
   uses-material-design: true
