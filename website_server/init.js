@@ -1,1 +1,2 @@
-const http = require("./components/drive/init");
+const driveHttp = require("./components/drive/init");
+const laritaHttp = require("./components/larita/init");
