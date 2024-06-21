@@ -33,11 +33,13 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
   String playerPositionText = "00:00";
   double playerPositionSlider = 0;
   bool playerSliderInUse = false;
+  Duration? playerSliderToPosition;
   double playerVolume = 0;
   bool showPlayerVolume = false;
   bool isFullScreenVideo = false;
   bool fullScreenHideBars = false;
   int timeUntilHideBars = 0;
+  double playerPlayBackSpeed = 1.0;
 
   @override
   void dispose() {
@@ -142,6 +144,7 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
               titleTextStyle: Theme.of(context).textTheme.titleLarge,
               iconTheme: Theme.of(context).iconTheme,
               actions: [
+                // Fullscreen button
                 Builder(
                   builder: (context) => IconButton(
                     icon: const Icon(Icons.fullscreen),
@@ -189,31 +192,37 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
                               onChanged: (newValue) {
                                 showPlayerVolume = false;
                                 if (videoPlayer == null) return;
+                                videoPlayer!.pause();
                                 playerSliderInUse = true;
-                                Duration nextPosition = Duration(milliseconds: (videoPlayer!.value.duration.inMilliseconds * (newValue / 100)).toInt());
-                                // Calculates the desired position
-                                videoPlayer!.seekTo(nextPosition);
+                                playerSliderToPosition = Duration(milliseconds: (videoPlayer!.value.duration.inMilliseconds * (newValue / 100)).toInt());
+                                videoPlayer!.seekTo(playerSliderToPosition!);
                                 setState(() => playerPositionSlider = newValue);
-
-                                // videoPlayer!.value = VideoPlayerValue(
-                                //   size: videoPlayer!.value.size,
-                                //   duration: videoPlayer!.value.duration,
-                                //   position: nextPosition,
-                                //   caption: videoPlayer!.value.caption,
-                                //   captionOffset: videoPlayer!.value.captionOffset,
-                                //   buffered: videoPlayer!.value.buffered,
-                                //   isInitialized: videoPlayer!.value.isInitialized,
-                                //   isLooping: true,
-                                //   isBuffering: videoPlayer!.value.isBuffering,
-                                //   volume: videoPlayer!.value.volume,
-                                //   playbackSpeed: videoPlayer!.value.playbackSpeed,
-                                //   errorDescription: videoPlayer!.value.errorDescription,
-                                //   isPlaying: false,
-                                //   isCompleted: false,
-                                // );
                               },
-                              onChangeEnd: (_) => playerSliderInUse = false,
+                              onChangeEnd: (_) {
+                                if (videoPlayer == null) return;
+                                playerSliderInUse = false;
+                                playerSliderToPosition = null;
+                                videoPlayer!.play();
+                              },
                             ),
+                          ),
+                          // Backward playback
+                          IconButton(
+                            onPressed: () {
+                              if (playerPlayBackSpeed <= 0.25) return;
+                              playerPlayBackSpeed -= 0.25;
+                              videoPlayer!.setPlaybackSpeed(playerPlayBackSpeed);
+                            },
+                            icon: const Icon(Icons.arrow_back),
+                          ),
+                          // Forward plaback
+                          IconButton(
+                            onPressed: () {
+                              if (playerPlayBackSpeed >= 10.0) return;
+                              playerPlayBackSpeed += 0.25;
+                              videoPlayer!.setPlaybackSpeed(playerPlayBackSpeed);
+                            },
+                            icon: const Icon(Icons.arrow_forward),
                           ),
                           // Sound button
                           IconButton(

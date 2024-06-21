@@ -13,16 +13,16 @@ dependencies:
   dio: ^5.4.3+1 # Requests
   http: ^1.2.1 # Download Files
   provider: ^6.1.1 # Communications between classes
-  file_picker: ^6.1.1 # Native pick files
+  file_picker: ^8.0.5 # Native pick files
   path: ^1.8.3 # Native path
   shared_preferences: ^2.2.3 # Local storage
-  video_player: ^2.8.6 # Play videos
+  video_player: ^2.8.7 # Play videos
   photo_view: ^0.15.0 # View images
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   assets:
