@@ -8,7 +8,9 @@ import 'package:leans/pages/drive/configs.dart';
 import 'package:leans/pages/drive/datas.dart';
 
 class DriveProvider extends ChangeNotifier {
-  String _username = "";
+  int apiPorts = 7979;
+
+  String _username = "anonymous";
   String get username => _username;
   void changeUsername(value) => _username = value;
 

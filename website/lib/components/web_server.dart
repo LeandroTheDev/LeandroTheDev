@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:leans/main.dart';
 
 class WebServer {
-  static const serverAddress = 'leandrothedev.duckdns.org:7979';
+  static const serverAddress = 'leandrothedev.duckdns.org';
 
   ///Comunicates the server via http request and return a Map with the server response
   ///
@@ -41,8 +41,8 @@ class WebServer {
       sender.options.validateStatus = (status) {
         status ??= 504;
         return status < 500;
-      };
-      return await sender.get("http://$serverAddress$address", queryParameters: body).catchError(
+      };      
+      return await sender.get("http://$serverAddress:${apiProvider.apiPorts}$address", queryParameters: body).catchError(
             (error) => Response(
               statusCode: 504,
               data: {
@@ -70,7 +70,7 @@ class WebServer {
         status ??= 504;
         return status < 500;
       };
-      return await sender.post("http://$serverAddress$address", data: body).catchError(
+      return await sender.post("http://$serverAddress:${apiProvider.apiPorts}$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
               data: {
@@ -99,7 +99,7 @@ class WebServer {
         return status < 500;
       };
 
-      return await sender.delete("http://$serverAddress$address", data: body).catchError(
+      return await sender.delete("http://$serverAddress:${apiProvider.apiPorts}$address", data: body).catchError(
             (error) => Response(
               statusCode: 504,
               data: {

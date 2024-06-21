@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:leans/pages/drive/home.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:leans/pages/larita/home.dart';
+import 'package:leans/pages/larita/provider.dart';
 import 'package:leans/pages/protify/home.dart';
 import 'package:provider/provider.dart';
 
-const isDebug = !bool.fromEnvironment('dart.vm.product');
+const isDebug = bool.fromEnvironment('dart.vm.product');
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DriveProvider()),
+        ChangeNotifierProvider(create: (_) => LaritaProvider()),
       ],
       child: const Leans(),
     ),
@@ -40,7 +42,6 @@ class Leans extends StatelessWidget {
           //--------------
           colorScheme: ColorScheme.fromSeed(
             //Default Colors
-            background: colors["background"],
             seedColor: colors["seedColor"]!,
 
             //Used in large interfaces
@@ -50,7 +51,7 @@ class Leans extends StatelessWidget {
             //Used in visibility things like texts
             tertiary: colors["tertiary"],
           ),
-          //Used in small interfaces
+          // Used in small interfaces
           primaryColor: colors["primary"],
           //Used in borders
           secondaryHeaderColor: colors["secondary"],
@@ -232,7 +233,7 @@ class HomeScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
-                    //Drive Button
+                    //Larita Button
                     SizedBox(
                       width: 110,
                       child: FittedBox(
@@ -243,10 +244,13 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               const Text("Larita"),
                               const SizedBox(width: 5),
-                              SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Image.asset("assets/larita/icon.png"),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: SizedBox(
+                                  height: 40,
+                                  width: 24,
+                                  child: Image.asset("assets/larita/icon.png", fit: BoxFit.cover),
+                                ),
                               ),
                             ],
                           ),
