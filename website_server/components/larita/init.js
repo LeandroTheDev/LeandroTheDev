@@ -43,7 +43,7 @@ http.listen(7878, function () {
     console.log("[Larita] Authentication Instanciated");
 
     //Declaring Storage
-    const chatbot = require("./chatbot");
+    const chatbot = new require("./chatbot");
     chatbot.instanciateChatBot(http);
     console.log("[Larita] ChatBot Instanciated");
 

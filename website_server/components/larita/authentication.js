@@ -31,13 +31,13 @@ class LaritaAuthentication {
             //Updating the token in database
             if (await database.updateUserToken(token, username)) { internalError(); return };
             delete require("./init").ipTimeout[req.ip];
-            console.log("[Drive Auth] user " + username + " authenticated in ip: " + req.ip);
+            console.log("[Larita Auth] user " + username + " authenticated in ip: " + req.ip);
             //Success, send the token to the user
             res.status(200).send({ error: false, message: token });
         }
         //Wrong Credentials
         else {
-            console.log("[Drive Auth] " + req.ip + " authentication refused, wrong credentials for " + username);
+            console.log("[Larita Auth] " + req.ip + " authentication refused, wrong credentials for " + username);
             res.status(401).send({ error: true, message: 'Invalid Credentials' });
             return;
         }
@@ -45,7 +45,7 @@ class LaritaAuthentication {
 
     instanciateAuthentication(http) {
         //Post
-        http.post('/drive/login', this.login);
+        http.post('/larita/login', this.login);
     }
 }
 
