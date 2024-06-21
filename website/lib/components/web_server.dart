@@ -41,7 +41,7 @@ class WebServer {
       sender.options.validateStatus = (status) {
         status ??= 504;
         return status < 500;
-      };      
+      };
       return await sender.get("http://$serverAddress:${apiProvider.apiPorts}$address", queryParameters: body).catchError(
             (error) => Response(
               statusCode: 504,
@@ -154,7 +154,7 @@ class WebServer {
 
     try {
       // Request stream download from the server
-      Response response = await receiver.get("http://$serverAddress$address", queryParameters: body).catchError(
+      Response response = await receiver.get("http://$serverAddress:${apiProvider.apiPorts}$address", queryParameters: body).catchError(
             (error) => Response(
               statusCode: 504,
               data: {"message": isDebug ? "Cannot download file, reason: $error" : "Cannot connect to the server"},
@@ -268,7 +268,7 @@ class WebServer {
 
     return await sender
         .post(
-          "http://$serverAddress$address",
+          "http://$serverAddress:${apiProvider.apiPorts}$address",
           data: formData,
           onSendProgress: (count, total) => apiProvider.updateKeyUploadStatus(configs!["fileName"], (count / total) * 100),
         )

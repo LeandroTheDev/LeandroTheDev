@@ -74,7 +74,7 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
             DriveUtils.log("Request success, initializing Video Player");
             // Listening to the server
             videoPlayer = VideoPlayerController.networkUrl(
-              Uri.parse("http://${WebServer.serverAddress}/drive/getVideo?directory=$videoDirectory"),
+              Uri.parse("http://${WebServer.serverAddress}:${driveProvider.apiPorts}/drive/getVideo?directory=$videoDirectory"),
               httpHeaders: {
                 "username": driveProvider.username,
                 "token": driveProvider.token,
@@ -342,7 +342,7 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
           body: Center(
             child: PhotoView(
               imageProvider: NetworkImage(
-                "http://${WebServer.serverAddress}/drive/getImage?directory=${driveProvider.directory}/${widget.fileName}",
+                "http://${WebServer.serverAddress}:${driveProvider.apiPorts}/drive/getImage?directory=${driveProvider.directory}/${widget.fileName}",
                 headers: {
                   "username": driveProvider.username,
                   "token": driveProvider.token,
