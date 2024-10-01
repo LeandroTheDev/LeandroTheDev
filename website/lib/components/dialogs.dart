@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:leans/components/crypto.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:leans/pages/drive/provider.dart';
 import 'package:leans/pages/larita/provider.dart';
@@ -57,8 +58,8 @@ class Dialogs {
                         address: "/drive/login",
                         api: "drive",
                         body: {
-                          "username": username.text,
-                          "password": password.text,
+                          "username": Crypto.encryptText(username.text),
+                          "password": Crypto.encryptText(password.text),
                         },
                       ).then(
                         (response) {

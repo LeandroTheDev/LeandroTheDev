@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 //Dependencies
 import 'package:dio/dio.dart';
+import 'package:leans/components/crypto.dart';
 import 'package:leans/components/dialogs.dart';
 import 'package:leans/components/utils.dart';
 
@@ -11,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:leans/main.dart';
 
 class WebServer {
-  static const serverAddress = 'leandrothedev.duckdns.org';
+  static const serverAddress = 'localhost';
 
   ///Comunicates the server via http request and return a Map with the server response
   ///
@@ -37,7 +38,7 @@ class WebServer {
       Dio sender = Dio();
       final apiProvider = Utils.getApiProvider(context, api);
 
-      sender.options.headers = {"username": apiProvider.username, "token": apiProvider.token};
+      sender.options.headers = {"username": Crypto.encryptText(apiProvider.username), "token": Crypto.encryptText(apiProvider.token)};
       sender.options.validateStatus = (status) {
         status ??= 504;
         return status < 500;
@@ -63,8 +64,8 @@ class WebServer {
 
       sender.options.headers = {
         "content-type": 'application/json',
-        "username": apiProvider.username,
-        "token": apiProvider.token,
+        "username": Crypto.encryptText(apiProvider.username),
+        "token": Crypto.encryptText(apiProvider.token),
       };
       sender.options.validateStatus = (status) {
         status ??= 504;
@@ -91,8 +92,8 @@ class WebServer {
 
       sender.options.headers = {
         "content-type": 'application/json',
-        "username": apiProvider.username,
-        "token": Utils.getApiProvider(context, api).token,
+        "username": Crypto.encryptText(apiProvider.username),
+        "token": Crypto.encryptText(Utils.getApiProvider(context, api).token),
       };
       sender.options.validateStatus = (status) {
         status ??= 504;
@@ -244,8 +245,8 @@ class WebServer {
 
     sender.options.headers = {
       "content-type": 'multipart/form-data',
-      "username": apiProvider.username,
-      "token": apiProvider.token,
+      "username": Crypto.encryptText(apiProvider.username),
+      "token": Crypto.encryptText(apiProvider.token),
     };
     sender.options.validateStatus = (status) {
       status ??= 504;
