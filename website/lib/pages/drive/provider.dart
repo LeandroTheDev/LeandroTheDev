@@ -64,6 +64,11 @@ class DriveProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void resetItemViewPositions() {
+    _itemViewerPosition = 0;
+    notifyListeners();
+  }
+
   int _itemViewerQuantity = 0;
   int get itemViewerQuantity => _itemViewerQuantity;
   void changeItemViewerQuantity(int value) => _itemViewerQuantity = value;
@@ -79,7 +84,8 @@ class DriveProvider extends ChangeNotifier {
         DriveUtils.log("Finished with code: ${response.statusCode}");
         // Check errors
         if (WebServer.errorTreatment(context, "drive", response, isFatal: false)) {
-          DriveUtils.log("No errors occurs, proceeding to the data");
+          DriveUtils.log("No errors occurs, proceeding to the data, and resseting view positioning...");
+          resetItemViewPositions();
 
           // Load folders and files
           final data = response.data["message"];
@@ -162,7 +168,7 @@ class DriveProvider extends ChangeNotifier {
 
   /// Creates a new folder on the actual directory
   createFolder(BuildContext context) {
-    Dialogs.typeInput(context, title:  "Create a folder").then(
+    Dialogs.typeInput(context, title: "Create a folder").then(
       (folderName) => {
         WebServer.sendMessage(context, api: "drive", address: '/drive/createfolder', body: {"directory": "$_directory/$folderName"}).then(
           (response) => {

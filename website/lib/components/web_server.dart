@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 //Dependencies
 import 'package:dio/dio.dart';
@@ -12,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:leans/main.dart';
 
 class WebServer {
-  static const serverAddress = 'localhost';
+  static final serverAddress = html.window.location.host.split(":").first;
 
   ///Comunicates the server via http request and return a Map with the server response
   ///

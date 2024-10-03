@@ -69,11 +69,14 @@ class _DriveHomeState extends State<DriveHome> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         // If theres is no more directory return to home screen
-        if (driveProvider.directory == "")
+        if (driveProvider.directory == "") {
           Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false);
+          driveProvider.resetItemViewPositions();
+        }
         // In others case go to previous directory
-        else
+        else {
           driveProvider.previousDirectory(context);
+        }
       },
       child: Scaffold(
         appBar: PreferredSize(
@@ -114,7 +117,9 @@ class _DriveHomeState extends State<DriveHome> {
                     child: driveProvider.directory == ""
                         ? const SizedBox(height: 10, width: 25)
                         : IconButton(
-                            onPressed: () => driveProvider.previousDirectory(context),
+                            onPressed: () => {
+                              driveProvider.previousDirectory(context),
+                            },
                             icon: const Icon(Icons.arrow_back_ios),
                           ),
                   ),
