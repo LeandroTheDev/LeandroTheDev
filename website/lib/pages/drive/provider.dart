@@ -162,7 +162,7 @@ class DriveProvider extends ChangeNotifier {
 
   /// Creates a new folder on the actual directory
   createFolder(BuildContext context) {
-    Dialogs.typeInput(context).then(
+    Dialogs.typeInput(context, title:  "Create a folder").then(
       (folderName) => {
         WebServer.sendMessage(context, api: "drive", address: '/drive/createfolder', body: {"directory": "$_directory/$folderName"}).then(
           (response) => {
@@ -324,6 +324,7 @@ class DriveUtils {
     if (fileName.endsWith(".png")) return true;
     if (fileName.endsWith(".jpg")) return true;
     if (fileName.endsWith(".jpeg")) return true;
+    if (fileName.endsWith(".gif")) return true;
     return false;
   }
 

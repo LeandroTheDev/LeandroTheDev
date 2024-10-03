@@ -3,6 +3,8 @@ const path = require('path');
 const multer = require('multer');
 const decryptText = require("../crypto/decrypto");
 
+const administrators = ["admin"];
+
 const imageDefaultExpiration = 5;
 const fileDefaultExpiration = 1;
 const videoDefaultExpiration = 100;
@@ -29,6 +31,13 @@ class DriveStorage {
         const year = now.getFullYear();
         return `${hour}h/${day}d/${month}m/${year}y`;
     }
+    // Returns false if the actual user is on administrator list
+    static falseConditionIfAdministrator(username) {
+        for (let i = 0; i < administrators.length; i++) {
+            if (administrators[i] == username) return false
+        }
+        return true;
+    }
 
     async getFolders(req, res) {
         const directory = req.query.directory;
@@ -47,7 +56,7 @@ class DriveStorage {
         if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-        if (directory.length != 0 && !DriveStorage.directoryTreatment(directory)) {
+        if (directory.length != 0 && !DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;
         }
@@ -99,7 +108,7 @@ class DriveStorage {
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
             if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-            if (!DriveStorage.directoryTreatment(directory)) {
+            if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
                 return;
             }
@@ -198,7 +207,7 @@ class DriveStorage {
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
             if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-            if (!DriveStorage.directoryTreatment(directory)) {
+            if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
                 return;
             }
@@ -295,7 +304,7 @@ class DriveStorage {
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
             if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
-            if (!DriveStorage.directoryTreatment(directory)) {
+            if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
                 return;
             }
@@ -402,7 +411,7 @@ class DriveStorage {
         if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
         if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
-        if (!DriveStorage.directoryTreatment(directory)) {
+        if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(403).send({ error: true, message: "Invalid Directory, the directory must contain only letter and numbers" });
             return;
         }
@@ -435,7 +444,7 @@ class DriveStorage {
         if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
         console.log(item);
         if (stringsTreatment(typeof item, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
-        if (!DriveStorage.directoryTreatment(item)) {
+        if (!DriveStorage.directoryTreatment(item) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
             return;
         }
@@ -529,7 +538,7 @@ class DriveStorage {
             // Get save directory
             const directory = req.body.saveDirectory;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, why you are sending me a non string directory?", 401)) return;
-            if (directory.length != 0 && !DriveStorage.directoryTreatment(directory)) {
+            if (directory.length != 0 && !DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
                 return;
             }
@@ -538,7 +547,7 @@ class DriveStorage {
             for (let fileIndex = 0; fileIndex < req.files.length; fileIndex++) {
                 const fileName = req.files[fileIndex]["originalname"];
 
-                if (!DriveStorage.directoryTreatment(fileName)) {
+                if (!DriveStorage.directoryTreatment(fileName) && DriveStorage.falseConditionIfAdministrator(username)) {
                     res.status(401).send({ error: true, message: "The file name is not acceptable, please change it" });
                     return;
                 }

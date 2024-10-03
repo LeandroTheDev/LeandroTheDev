@@ -236,7 +236,7 @@ class Dialogs {
   }
 
   ///Show a prompt to user type something
-  static Future<String> typeInput(BuildContext context, {title = ""}) {
+  static Future<String> typeInput(BuildContext context, {String title = ""}) {
     Completer<String> completer = Completer<String>();
     showDialog(
         context: context,
@@ -248,6 +248,9 @@ class Dialogs {
               child: AlertDialog(
                 title: Column(
                   children: [
+                    // Title
+                    Text(title),
+                    // Input
                     TextField(
                       controller: input,
                       cursorColor: Theme.of(context).colorScheme.tertiary,

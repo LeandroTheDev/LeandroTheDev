@@ -191,7 +191,7 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
                               max: 100,
                               onChanged: (newValue) {
                                 showPlayerVolume = false;
-                                if (videoPlayer == null) return;
+                                if (videoPlayer == null || playerSliderInUse) return;
                                 videoPlayer!.pause();
                                 playerSliderInUse = true;
                                 playerSliderToPosition = Duration(milliseconds: (videoPlayer!.value.duration.inMilliseconds * (newValue / 100)).toInt());
@@ -200,7 +200,13 @@ class _DriveItemViewerState extends State<DriveItemViewer> {
                               },
                               onChangeEnd: (_) {
                                 if (videoPlayer == null) return;
-                                playerSliderInUse = false;
+                                final int lastSecond = videoPlayer!.value.position.inMilliseconds;
+                                // We need to wait sometime to not break the video player
+                                Timer.periodic(Durations.long1, (timer) {
+                                  if (lastSecond == videoPlayer!.value.position.inMilliseconds) return;
+                                  timer.cancel();
+                                  playerSliderInUse = false;
+                                });
                                 playerSliderToPosition = null;
                                 videoPlayer!.play();
                               },

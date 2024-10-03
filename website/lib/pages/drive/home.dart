@@ -27,6 +27,7 @@ class _DriveHomeState extends State<DriveHome> {
 
     //Check if credentials is needed
     if (!loaded && driveProvider.token == "") {
+      driveProvider.changeDirectory("");
       loaded = true;
       //Ask for credentials
       WidgetsBinding.instance.addPostFrameCallback(
@@ -66,7 +67,7 @@ class _DriveHomeState extends State<DriveHome> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         // If theres is no more directory return to home screen
         if (driveProvider.directory == "")
           Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false);
