@@ -21,3 +21,4 @@ You also will need the ollama enabled in your system for Larita
 - npm install mariadb
 - npm install sequelize
 - npm install multer
+- npm install node-jsencrypt

@@ -297,39 +297,44 @@ class _DriveHomeState extends State<DriveHome> {
             // Next and back buttons
             SizedBox(
               height: DriveConfigs.getWidgetSize(widget: "next", type: "height", screenSize: screenSize),
-              child: Row(
-                mainAxisAlignment: screenSize.width > screenSize.height ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () => driveProvider.changeItemViewerPosition(context, driveProvider.itemViewerPosition - 1),
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  const SizedBox(width: 15),
-                  IconButton(
-                    onPressed: () => driveProvider.changeItemViewerPosition(context, driveProvider.itemViewerPosition + 1),
-                    icon: const Icon(Icons.arrow_forward),
-                  ),
-                ],
+              child: FittedBox(
+                child: Row(
+                  mainAxisAlignment: screenSize.width > screenSize.height ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () => driveProvider.changeItemViewerPosition(context, driveProvider.itemViewerPosition - 1),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                    const SizedBox(width: 15),
+                    IconButton(
+                      onPressed: () => driveProvider.changeItemViewerPosition(context, driveProvider.itemViewerPosition + 1),
+                      icon: const Icon(Icons.arrow_forward),
+                    ),
+                  ],
+                ),
               ),
             ),
             // Upload and Create folder buttons
             SizedBox(
               height: DriveConfigs.getWidgetSize(widget: "bar", type: "height", screenSize: screenSize),
-              child: FittedBox(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
+              width: DriveConfigs.isPortrait(screenSize) ? screenSize.width : screenSize.width / 2,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espaçamento entre os botões
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
                       onPressed: () => driveProvider.uploadFile(context),
                       child: const Text("Upload File"),
                     ),
-                    const SizedBox(width: 15),
-                    ElevatedButton(
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: ElevatedButton(
                       onPressed: () => driveProvider.createFolder(context),
                       child: const Text("Create Folder"),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             )
           ]),
@@ -353,7 +358,7 @@ class _UploadDrawerState extends State<UploadDrawer> {
     final screenSize = MediaQuery.of(context).size;
 
     return Drawer(
-      width: screenSize.width * 0.3,
+      width: DriveConfigs.isPortrait(screenSize) ? screenSize.width * 0.5 : screenSize.width * 0.3,
       child: Container(
         color: Leans.colors["primary"],
         child: SingleChildScrollView(

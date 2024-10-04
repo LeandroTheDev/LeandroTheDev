@@ -37,76 +37,66 @@ class Leans extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Leans',
       theme: ThemeData(
-          //--------------
-          //Colors
-          //--------------
-          colorScheme: ColorScheme.fromSeed(
-            //Default Colors
-            seedColor: colors["seedColor"]!,
+        //--------------
+        //Colors
+        //--------------
+        colorScheme: ColorScheme.fromSeed(
+          //Default Colors
+          seedColor: colors["seedColor"]!,
 
-            //Used in large interfaces
-            primary: colors["primary"]!,
-            //Used in buttons
-            secondary: colors["secondary"]!,
-            //Used in visibility things like texts
-            tertiary: colors["tertiary"],
-          ),
-          // Used in small interfaces
-          primaryColor: colors["primary"],
-          //Used in borders
-          secondaryHeaderColor: colors["secondary"],
-          //Scafolld background
-          scaffoldBackgroundColor: const Color.fromARGB(255, 104, 102, 102),
-          useMaterial3: true,
+          //Used in large interfaces
+          primary: colors["primary"]!,
+          //Used in buttons
+          secondary: colors["secondary"]!,
+          //Used in visibility things like texts
+          tertiary: colors["tertiary"],
+        ),
+        // Used in small interfaces
+        primaryColor: colors["primary"],
+        //Used in borders
+        secondaryHeaderColor: colors["secondary"],
+        //Scafolld background
+        scaffoldBackgroundColor: const Color.fromARGB(255, 104, 102, 102),
+        useMaterial3: true,
 
-          //--------------
-          //Widgets Themes
-          //--------------
-          iconTheme: IconThemeData(
-            color: colors["tertiary"],
+        //--------------
+        //Widgets Themes
+        //--------------
+        iconTheme: IconThemeData(
+          color: colors["tertiary"],
+        ),
+        textTheme: TextTheme(
+          titleLarge: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
+          titleMedium: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
+          titleSmall: TextStyle(color: colors["tertiary"], fontSize: 6, overflow: TextOverflow.ellipsis),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colors["secondary"],
+            foregroundColor: colors["tertiary"],
+            surfaceTintColor: colors["secondary"],
+            shadowColor: colors["secondary"],
           ),
-          textTheme: TextTheme(
-            titleLarge: TextStyle(
-                color: colors["tertiary"],
-                fontSize: 24,
-                overflow: TextOverflow.ellipsis),
-            titleMedium: TextStyle(
-                color: colors["tertiary"],
-                fontSize: 16,
-                overflow: TextOverflow.ellipsis),
-            titleSmall: TextStyle(
-                color: colors["tertiary"],
-                fontSize: 6,
-                overflow: TextOverflow.ellipsis),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: colors["tertiary"]!),
           ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors["secondary"],
-              foregroundColor: colors["tertiary"],
-              surfaceTintColor: colors["secondary"],
-              shadowColor: colors["secondary"],
-            ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: colors["secondary"]!),
           ),
-          inputDecorationTheme: InputDecorationTheme(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: colors["tertiary"]!),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: colors["secondary"]!),
-            ),
-          ),
-          dialogTheme: DialogTheme(
-            titleTextStyle: TextStyle(
-                color: colors["tertiary"],
-                fontSize: 24,
-                overflow: TextOverflow.ellipsis),
-            contentTextStyle: TextStyle(
-                color: colors["tertiary"],
-                fontSize: 16,
-                overflow: TextOverflow.ellipsis),
-            backgroundColor: colors["primary"],
-          ),
-          dialogBackgroundColor: colors["primary"]),
+        ),
+        dialogTheme: DialogTheme(
+          titleTextStyle: TextStyle(color: colors["tertiary"], fontSize: 24, overflow: TextOverflow.ellipsis),
+          contentTextStyle: TextStyle(color: colors["tertiary"], fontSize: 16, overflow: TextOverflow.ellipsis),
+          backgroundColor: colors["primary"],
+        ),
+        dialogBackgroundColor: colors["primary"],
+        textSelectionTheme: TextSelectionThemeData(
+          selectionColor: Colors.blue.withOpacity(0.3),
+          selectionHandleColor: Colors.blue,
+        ),
+      ),
       routes: {
         "home": (context) => const HomeScreen(),
         "drive": (context) => const DriveHome(),
@@ -146,9 +136,7 @@ class HomeScreen extends StatelessWidget {
                 width: screenSize.width,
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: screenSize.width < 1000
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center,
+                  crossAxisAlignment: screenSize.width < 1000 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
                   children: [
                     //Drive Title
                     Text(
@@ -161,8 +149,7 @@ class HomeScreen extends StatelessWidget {
                       width: 110,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, "drive"),
+                          onPressed: () => Navigator.pushNamed(context, "drive"),
                           child: Row(
                             children: [
                               const Text("Drive"),
@@ -199,8 +186,7 @@ class HomeScreen extends StatelessWidget {
                       width: 250,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, "protify"),
+                          onPressed: () => Navigator.pushNamed(context, "protify"),
                           child: Row(
                             children: [
                               const Text("Protify Demonstration"),
@@ -223,9 +209,7 @@ class HomeScreen extends StatelessWidget {
                 width: screenSize.width,
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: screenSize.width < 1000
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center,
+                  crossAxisAlignment: screenSize.width < 1000 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
                   children: [
                     //Larita Title
                     Text(
@@ -238,8 +222,7 @@ class HomeScreen extends StatelessWidget {
                       width: 110,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pushNamed(context, "larita"),
+                          onPressed: () => Navigator.pushNamed(context, "larita"),
                           child: Row(
                             children: [
                               const Text("Larita"),

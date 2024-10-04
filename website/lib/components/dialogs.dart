@@ -14,8 +14,7 @@ class Dialogs {
   static Future<Response> driveCredentials(BuildContext context) {
     DriveUtils.log("Instanciating dialog for credentials");
 
-    DriveProvider driveProvider =
-        Provider.of<DriveProvider>(context, listen: false);
+    DriveProvider driveProvider = Provider.of<DriveProvider>(context, listen: false);
 
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
@@ -34,9 +33,10 @@ class Dialogs {
             children: [
               //Username
               TextField(
-                  controller: username,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  style: Theme.of(context).textTheme.titleMedium),
+                controller: username,
+                cursorColor: Theme.of(context).colorScheme.tertiary,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               //Password
               TextField(
                 controller: password,
@@ -63,8 +63,7 @@ class Dialogs {
                         },
                       ).then(
                         (response) {
-                          DriveUtils.log(
-                              "Credentials server returned code: ${response.statusCode}");
+                          DriveUtils.log("Credentials server returned code: ${response.statusCode}");
 
                           driveProvider.changeUsername(username.text);
                           //Close Loading
@@ -81,8 +80,7 @@ class Dialogs {
                   ),
                   //Back Button
                   ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, "home"),
+                    onPressed: () => Navigator.pushReplacementNamed(context, "home"),
                     child: const Text("Back"),
                   ),
                 ],
@@ -109,8 +107,7 @@ class Dialogs {
   static Future<Response> laritaCredentials(BuildContext context) {
     LaritaUtils.log("Instanciating dialog for credentials");
 
-    LaritaProvider laritaProvider =
-        Provider.of<LaritaProvider>(context, listen: false);
+    LaritaProvider laritaProvider = Provider.of<LaritaProvider>(context, listen: false);
 
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
@@ -128,10 +125,7 @@ class Dialogs {
           child: Column(
             children: [
               //Username
-              TextField(
-                  controller: username,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  style: Theme.of(context).textTheme.titleMedium),
+              TextField(controller: username, cursorColor: Theme.of(context).colorScheme.tertiary, style: Theme.of(context).textTheme.titleMedium),
               //Password
               TextField(
                 controller: password,
@@ -158,8 +152,7 @@ class Dialogs {
                         },
                       ).then(
                         (response) {
-                          DriveUtils.log(
-                              "Credentials server returned code: ${response.statusCode}");
+                          DriveUtils.log("Credentials server returned code: ${response.statusCode}");
 
                           laritaProvider.changeUsername(username.text);
                           //Close Loading
@@ -176,8 +169,7 @@ class Dialogs {
                   ),
                   //Back Button
                   ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, "home"),
+                    onPressed: () => Navigator.pushReplacementNamed(context, "home"),
                     child: const Text("Back"),
                   ),
                 ],
@@ -200,18 +192,13 @@ class Dialogs {
   }
 
   ///Show a custom alert
-  static void alert(BuildContext context,
-      {String title = "Alert", String message = ""}) {
+  static void alert(BuildContext context, {String title = "Alert", String message = ""}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: Text(message,
-            style: Theme.of(context).textTheme.titleMedium, maxLines: 99),
-        actions: [
-          ElevatedButton(
-              onPressed: () => Navigator.pop(context), child: const Text("OK"))
-        ],
+        content: Text(message, style: Theme.of(context).textTheme.titleMedium, maxLines: 99),
+        actions: [ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
       ),
     );
   }
@@ -294,8 +281,7 @@ class Dialogs {
             height: screenSize.height,
             child: AlertDialog(
               title: Text(title, style: Theme.of(context).textTheme.titleLarge),
-              content:
-                  Text(content, style: Theme.of(context).textTheme.titleMedium),
+              content: Text(content, style: Theme.of(context).textTheme.titleMedium),
               actions: [
                 //yes
                 TextButton(
@@ -303,8 +289,7 @@ class Dialogs {
                     Navigator.of(context).pop();
                     completer.complete(true);
                   },
-                  child: Text(buttonTitle,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(buttonTitle, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 //no
                 TextButton(
@@ -312,8 +297,7 @@ class Dialogs {
                     Navigator.of(context).pop();
                     completer.complete(false);
                   },
-                  child: Text(buttonTitle2,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(buttonTitle2, style: Theme.of(context).textTheme.titleMedium),
                 ),
               ],
             ),
