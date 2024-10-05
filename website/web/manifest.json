@@ -1,11 +1,11 @@
 {
-    "name": "website",
-    "short_name": "website",
+    "name": "Leans Website",
+    "short_name": "Leans",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#4e4e4e",
+    "theme_color": "#40c4ff",
+    "description": "Leans Website",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
