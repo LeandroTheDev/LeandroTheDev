@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   dio: ^5.4.3+1 # Requests
-  http: ^1.2.1 # Download Files
   provider: ^6.1.1 # Communications between classes
   file_picker: ^8.0.5 # Native pick files
   path: ^1.8.3 # Native path

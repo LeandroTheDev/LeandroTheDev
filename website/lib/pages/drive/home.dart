@@ -6,6 +6,7 @@ import 'package:leans/main.dart';
 import 'package:leans/pages/drive/configs.dart';
 import 'package:leans/pages/drive/itemviewer.dart';
 import 'package:leans/pages/drive/provider.dart';
+import 'package:leans/pages/drive/storage.dart';
 import 'package:provider/provider.dart';
 
 class DriveHome extends StatefulWidget {
@@ -27,18 +28,39 @@ class _DriveHomeState extends State<DriveHome> {
 
     //Check if credentials is needed
     if (!loaded && driveProvider.token == "") {
-      driveProvider.changeDirectory("");
-      loaded = true;
-      //Ask for credentials
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => Dialogs.driveCredentials(context).then(
-          (response) {
-            if (WebServer.errorTreatment(context, "drive", response, isFatal: true)) {
-              DriveUtils.log("No errors in credentials, updating token and refreshing directory");
-              driveProvider.changeToken(response.data["message"]);
-              driveProvider.refreshDirectory(context);
-            }
-          },
+      Storage.getData("username").then(
+        (username) => Storage.getData("handshake").then(
+          (handshake) => Storage.getData("token").then(
+            (token) => Storage.getData("token_timestamp").then((tokenTimestamp) {
+              tokenTimestamp ??= 0;
+              Duration difference = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(tokenTimestamp as int));
+              // check for 1 hour token expiration
+              if (difference.inHours < 1) {
+                // Token not expired updating provider...
+                DriveUtils.log("Token is not expired, refreshing directory...");
+                driveProvider.changeToken(token);
+                driveProvider.changeUsername(username);
+                driveProvider.changeHandshake(handshake);
+                driveProvider.refreshDirectory(context);
+                return;
+              }
+              loaded = true;
+              //Ask for credentials
+              WidgetsBinding.instance.addPostFrameCallback(
+                (_) => Dialogs.driveCredentials(context).then(
+                  (response) {
+                    if (WebServer.errorTreatment(context, "drive", response, isFatal: true)) {
+                      DriveUtils.log("No errors in credentials, updating token and refreshing directory");
+                      driveProvider.changeToken(response.data["message"]);
+                      Storage.saveData("token", response.data["message"]);
+                      Storage.saveData("token_timestamp", DateTime.timestamp().millisecondsSinceEpoch);
+                      driveProvider.refreshDirectory(context);
+                    }
+                  },
+                ),
+              );
+            }),
+          ),
         ),
       );
     }

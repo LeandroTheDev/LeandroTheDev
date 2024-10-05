@@ -44,6 +44,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
 
         //Dependencies
         const database = require('./database');
@@ -54,7 +56,8 @@ class DriveStorage {
 
         //Errors Treatments
         if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-        if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+        if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+        if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
         if (directory.length != 0 && !DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
@@ -94,6 +97,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
 
         // Authentication
         {
@@ -106,7 +111,8 @@ class DriveStorage {
 
             //Errors Treatments
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-            if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+            if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+            if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
             if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
@@ -193,6 +199,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
 
         // Authentication
         {
@@ -205,7 +213,8 @@ class DriveStorage {
 
             //Errors Treatments
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-            if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+            if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+            if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
             if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
@@ -290,6 +299,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
 
         // Authentication
         {
@@ -302,7 +313,8 @@ class DriveStorage {
 
             //Errors Treatments
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-            if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+            if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+            if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
             if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 401)) return;
             if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
                 res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
@@ -399,6 +411,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
 
         //Dependencies
         const database = require('./database');
@@ -409,7 +423,8 @@ class DriveStorage {
 
         //Errors Treatments
         if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-        if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+        if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+        if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
         if (stringsTreatment(typeof directory, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
         if (!DriveStorage.directoryTreatment(directory) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(403).send({ error: true, message: "Invalid Directory, the directory must contain only letter and numbers" });
@@ -432,6 +447,8 @@ class DriveStorage {
         const headers = req.headers;
         const username = decryptText(headers.username);
         const token = decryptText(headers.token);
+        const handshake = headers.handshake;
+        const decryptedHandshake = decryptText(headers.handshake);
         //Dependencies
         const database = require('./database');
         const {
@@ -441,8 +458,8 @@ class DriveStorage {
 
         //Errors Treatments
         if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 403)) return;
-        if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
-        console.log(item);
+        if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+        if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
         if (stringsTreatment(typeof item, res, "Invalid Directory, what are you trying to do my friend?", 403)) return;
         if (!DriveStorage.directoryTreatment(item) && DriveStorage.falseConditionIfAdministrator(username)) {
             res.status(401).send({ error: true, message: "Invalid Directory, you cannot do this alright?" });
@@ -523,6 +540,8 @@ class DriveStorage {
             const headers = req.headers;
             const username = decryptText(headers.username);
             const token = decryptText(headers.token);
+            const handshake = headers.handshake;
+            const decryptedHandshake = decryptText(headers.handshake);
 
             //Dependencies
             const database = require('./database');
@@ -533,7 +552,8 @@ class DriveStorage {
 
             //Errors Treatments
             if (stringsTreatment(typeof username, res, "Invalid Username, why you are sending any invalid username?", 401)) return;
-            if (tokenCheckTreatment(token, await database.getUserToken(username), res)) return;
+            if (stringsTreatment(typeof decryptedHandshake, res, "Invalid Handshake, nope not like that.", 401)) return;
+            if (tokenCheckTreatment(username, handshake, decryptedHandshake, token, await database.getUserToken(username), res)) return;
 
             // Get save directory
             const directory = req.body.saveDirectory;

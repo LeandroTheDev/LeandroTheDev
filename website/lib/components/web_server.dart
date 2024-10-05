@@ -12,6 +12,7 @@ import 'package:leans/components/utils.dart';
 //Packages
 import 'package:flutter/material.dart';
 import 'package:leans/main.dart';
+import 'package:leans/pages/drive/storage.dart';
 
 class WebServer {
   static final serverAddress = html.window.location.host.split(":").first;
@@ -40,7 +41,11 @@ class WebServer {
       Dio sender = Dio();
       final apiProvider = Utils.getApiProvider(context, api);
 
-      sender.options.headers = {"username": Crypto.encryptText(apiProvider.username), "token": Crypto.encryptText(apiProvider.token)};
+      sender.options.headers = {
+        "username": Crypto.encryptText(apiProvider.username),
+        "token": Crypto.encryptText(apiProvider.token),
+        "handshake": Crypto.encryptText(apiProvider.handshake),
+      };
       sender.options.validateStatus = (status) {
         status ??= 504;
         return status < 500;
@@ -68,6 +73,7 @@ class WebServer {
         "content-type": 'application/json',
         "username": Crypto.encryptText(apiProvider.username),
         "token": Crypto.encryptText(apiProvider.token),
+        "handshake": Crypto.encryptText(apiProvider.handshake),
       };
       sender.options.validateStatus = (status) {
         status ??= 504;
@@ -96,6 +102,7 @@ class WebServer {
         "content-type": 'application/json',
         "username": Crypto.encryptText(apiProvider.username),
         "token": Crypto.encryptText(Utils.getApiProvider(context, api).token),
+        "handshake": Crypto.encryptText(apiProvider.handshake),
       };
       sender.options.validateStatus = (status) {
         status ??= 504;
@@ -292,10 +299,18 @@ class WebServer {
 
   ///Returns true if no error occurs, fatal erros return to home screen
   static bool errorTreatment(BuildContext context, String api, Response response, {bool isFatal = false}) {
-    checkFatal() {
+    Future checkFatal() async {
       if (isFatal) {
-        Navigator.pushNamedAndRemoveUntil(context, "home", (route) => false);
-        Utils.getApiProvider(context, api).changeToken("");
+        return Storage.removeData("username").then(
+          (_) => Storage.removeData("handshake").then(
+            (_) => Storage.removeData("token").then(
+              (_) => Storage.removeData("token_timestamp").then((_) {
+                Navigator.pushNamedAndRemoveUntil(context, "home", (route) => false);
+                Utils.getApiProvider(context, api).changeToken("");
+              }),
+            ),
+          ),
+        );
       }
     }
 
@@ -317,14 +332,12 @@ class WebServer {
         return false;
       //Wrong Credentials
       case 401:
-        checkFatal();
-        Utils.getApiProvider(context, api).changeToken("");
-        Dialogs.alert(context, title: "Not Authorized", message: response.data["message"]);
+        isFatal = true;
+        checkFatal().then((_) => Dialogs.alert(context, title: "Not Authorized", message: response.data["message"]));
         return false;
       // Not Found
       case 404:
         checkFatal();
-        Utils.getApiProvider(context, api).changeToken("");
         Dialogs.alert(context, title: "Not Found", message: response.data["message"]);
         return false;
       //Server Crashed
@@ -334,8 +347,7 @@ class WebServer {
         return false;
       //No connection with the server
       case 504:
-        checkFatal();
-        Dialogs.alert(context, title: "No connection", message: response.data["message"]);
+        checkFatal().then((_) => Dialogs.alert(context, title: "No connection", message: response.data["message"]));
         return false;
       //User Cancelled
       case 101:

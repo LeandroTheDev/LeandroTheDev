@@ -1,16 +1,9 @@
-# leans
+# Leans Website
 
-A new Flutter project.
+Features: 
+- Drive Storage: Unfurtunally its only works in modern browsers
+- RSA Security
+- Handshakes protection for hacker interceptions
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Warnings:
+- The username, token, handshake will not be encrypted for the localstorage in client side, all this data is encrypted when seended to the server, so be careful using this hosted website, any redirection can steal this datas.

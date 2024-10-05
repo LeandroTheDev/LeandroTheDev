@@ -18,6 +18,10 @@ class DriveProvider extends ChangeNotifier {
   String get token => _token;
   void changeToken(value) => _token = value;
 
+  String _handshake = "";
+  String get handshake => _handshake;
+  void changeHandshake(value) => _handshake = value;
+
   List _folders = [];
   List get folders => _folders;
   void changeFolders(value) => _folders = value.map((e) => e.toString()).toList();
@@ -100,8 +104,9 @@ class DriveProvider extends ChangeNotifier {
             DriveUtils.log("Ignoring image download");
           else
             downloadImagesCache(context);
-        }
-        notifyListeners();
+
+          notifyListeners();
+        } else DriveUtils.log("Error while refreshing directory, will not update screen state...");
       },
     );
   }

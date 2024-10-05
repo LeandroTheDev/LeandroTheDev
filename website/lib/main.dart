@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:leans/components/dialogs.dart';
 import 'package:leans/pages/drive/home.dart';
 import 'package:leans/pages/drive/provider.dart';
+import 'package:leans/pages/drive/storage.dart';
 import 'package:leans/pages/larita/home.dart';
 import 'package:leans/pages/larita/provider.dart';
 import 'package:leans/pages/protify/home.dart';
 import 'package:provider/provider.dart';
 
-const isDebug = bool.fromEnvironment('dart.vm.product');
+const isDebug = !bool.fromEnvironment('dart.vm.product');
 
 void main() {
   runApp(
@@ -115,6 +117,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final driveProvider = Provider.of<DriveProvider>(context, listen: true);
     return Scaffold(
       body: SingleChildScrollView(
         child: SizedBox(
@@ -146,21 +149,49 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 10),
                     //Drive Button
                     SizedBox(
-                      width: 110,
+                      width: 170,
                       child: FittedBox(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, "drive"),
-                          child: Row(
-                            children: [
-                              const Text("Drive"),
-                              const SizedBox(width: 5),
-                              SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Image.asset("assets/drive/icon.png"),
+                        child: Row(
+                          children: [
+                            // Enter Button
+                            ElevatedButton(
+                              onPressed: () => Navigator.pushNamed(context, "drive"),
+                              child: Row(
+                                children: [
+                                  const Text("Drive"),
+                                  const SizedBox(width: 5),
+                                  SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: Image.asset("assets/drive/icon.png"),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 5),
+                            // Logout Button
+                            IconButton(
+                                onPressed: () {
+                                  Dialogs.showQuestion(context, title: "Logout", content: "You want to logout from your Drive?").then(
+                                    (result) {
+                                      if (result) {
+                                        DriveUtils.log("Credentials has been cleaned");
+                                        driveProvider.changeToken("");
+                                        driveProvider.changeUsername("anonymous");
+                                        driveProvider.changeHandshake("");
+                                        Storage.removeData("username").then(
+                                          (_) => Storage.removeData("handshake").then(
+                                            (_) => Storage.removeData("token").then(
+                                              (_) => Storage.removeData("token_timestamp").then((_) {}),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.logout)),
+                          ],
                         ),
                       ),
                     ),

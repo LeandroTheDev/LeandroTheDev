@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:leans/components/crypto.dart';
 import 'package:leans/components/web_server.dart';
 import 'package:leans/pages/drive/provider.dart';
+import 'package:leans/pages/drive/storage.dart';
 import 'package:leans/pages/larita/provider.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +55,12 @@ class Dialogs {
                     onPressed: () async {
                       DriveUtils.log("Confirming credentials...");
                       loading(context);
+
+                      // Creating the handshake
+                      Random random = Random();
+                      String handshake = "";
+                      for (int i = 0; i < 100; i++) handshake += random.nextInt(10).toString();
+
                       WebServer.sendMessage(
                         context,
                         address: "/drive/login",
@@ -60,16 +68,22 @@ class Dialogs {
                         body: {
                           "username": Crypto.encryptText(username.text),
                           "password": Crypto.encryptText(password.text),
+                          "handshake": Crypto.encryptText(handshake)
                         },
                       ).then(
                         (response) {
                           DriveUtils.log("Credentials server returned code: ${response.statusCode}");
 
                           driveProvider.changeUsername(username.text);
+                          driveProvider.changeHandshake(handshake);
+
                           //Close Loading
                           Navigator.pop(context);
                           //Close Credentials
                           Navigator.pop(context);
+
+                          Storage.saveData("username", username.text);
+                          Storage.saveData("handshake", handshake);
 
                           DriveUtils.log("Returning future...");
                           completer.complete(response);
