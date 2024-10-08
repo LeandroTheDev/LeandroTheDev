@@ -53,10 +53,6 @@ function tokenCheckTreatment(username, handshake, decryptedHandshake, userToken,
         return true;
     }
     else if (tokens[username]["handshake"] != decryptedHandshake) {
-        console.log("--------------");
-        console.log(tokens[username]["handshake"]);
-        console.log("--------------");
-        console.log(decryptedHandshake);
         delete tokens[username];
         resCallBack.status(401).send({ error: true, message: "Invalid Token, nice try but your handshake its not the same." });
         return true

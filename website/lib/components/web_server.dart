@@ -256,6 +256,7 @@ class WebServer {
       "content-type": 'multipart/form-data',
       "username": Crypto.encryptText(apiProvider.username),
       "token": Crypto.encryptText(apiProvider.token),
+      "handshake": Crypto.encryptText(apiProvider.handshake),
     };
     sender.options.validateStatus = (status) {
       status ??= 504;
