@@ -1,43 +1,43 @@
 ### Personal Overview 💻
 
-My professional idea is to be a full stack developer, trying to learn all sides of languages and softwares learning.
+Full stack developer passionate about building robust and scalable applications.
 
-The games in general was an inspiration to start programming, i used to took some source codes and modified by myself before i really started in programming, now I'm focusing on studying, always keeping in mind the organization of the code, this is my dilemma.
+Advocate of clean code principles and best practices in software development. 
 
-I am a person who tries to make the code as readable as possible, always leaving comments in the code sections, making the life easier for people that need a help with my codes.
+Contributor to open source projects with a focus on creating rich project wikis and delivering excellence in documentation.
 
-Always following the good code practices, and a FTM developer projects, take a time and see my [portfolio](http://leandrothedev.duckdns.org)
+Take a time and see my [portfolio](http://leandrothedev.duckdns.org)
 
 #
 # Expecializations
 ### Languages
-- MySQL/MariaDB / Sênior
-- JavaScript / Sênior
-- Java / Pleno
-- Rust / Pleno
-- HTML|CSS / Sênior
-- Lua / Sênior
-- C# / Pleno
-- Dart / Sênior
+- MySQL/MariaDB
+- JavaScript
+- Java
+- Rust
+- HTML|CSS
+- Lua
+- C#
+- Dart
 
 ### Frameworks
-- Flutter / Sênior
-- ReactNative / Junior
-- Cordova / Sênior
-- Fyrox / Sênior
-- Node.js / Sênior
-- Maui / Sênior
-- Dotnet / Sênior
+- Flutter
+- ReactNative
+- Cordova
+- Fyrox
+- Node.js
+- Maui
+- Dotnet
 
 ### Areas
-- Software Development / Sênior
-- Mobile Development / Sênior
-- Windows Development / Junior
-- Linux/Mac Development / Sênior
-- Design / Pleno
-- Server Development / Sênior
-- Data Organization / Sênior
-- Game Design / Sênior
+- Software Development
+- Mobile Development
+- Windows Development
+- Linux Development
+- Server Development
+- Data Organization
+- Infrastructure Organization
+- Game Design
 
 #
 ## ✉ Contacts

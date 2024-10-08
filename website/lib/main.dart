@@ -1,25 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:leans/components/dialogs.dart';
-import 'package:leans/pages/drive/home.dart';
-import 'package:leans/pages/drive/provider.dart';
-import 'package:leans/pages/drive/storage.dart';
-import 'package:leans/pages/larita/home.dart';
-import 'package:leans/pages/larita/provider.dart';
 import 'package:leans/pages/protify/home.dart';
-import 'package:provider/provider.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 const isDebug = !bool.fromEnvironment('dart.vm.product');
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => DriveProvider()),
-        ChangeNotifierProvider(create: (_) => LaritaProvider()),
-      ],
-      child: const Leans(),
-    ),
-  );
+  runApp(const Leans());
 }
 
 class Leans extends StatelessWidget {
@@ -31,6 +18,8 @@ class Leans extends StatelessWidget {
     "seedColor": Colors.lightBlueAccent,
     "background": Color.fromARGB(255, 51, 49, 49),
   };
+  static final String driveAddress = html.window.location.host.split(":").first;
+  static const int drivePorts = 7878;
   const Leans({super.key});
 
   @override
@@ -101,9 +90,7 @@ class Leans extends StatelessWidget {
       ),
       routes: {
         "home": (context) => const HomeScreen(),
-        "drive": (context) => const DriveHome(),
         "protify": (context) => const ProtifyHome(),
-        "larita": (context) => const LaritaHome(),
       },
       home: const HomeScreen(),
     );
@@ -117,7 +104,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final driveProvider = Provider.of<DriveProvider>(context, listen: true);
     return Scaffold(
       body: SingleChildScrollView(
         child: SizedBox(
@@ -144,18 +130,19 @@ class HomeScreen extends StatelessWidget {
                     //Drive Title
                     Text(
                       "The best location to save your files is here, in the drive.",
+                      maxLines: 99,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
                     //Drive Button
                     SizedBox(
-                      width: 170,
+                      width: 110,
                       child: FittedBox(
                         child: Row(
                           children: [
                             // Enter Button
                             ElevatedButton(
-                              onPressed: () => Navigator.pushNamed(context, "drive"),
+                              onPressed: () => html.window.location.href = "http://${Leans.driveAddress}:${Leans.drivePorts}",
                               child: Row(
                                 children: [
                                   const Text("Drive"),
@@ -168,30 +155,50 @@ class HomeScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 5),
-                            // Logout Button
-                            IconButton(
-                                onPressed: () {
-                                  Dialogs.showQuestion(context, title: "Logout", content: "You want to logout from your Drive?").then(
-                                    (result) {
-                                      if (result) {
-                                        DriveUtils.log("Credentials has been cleaned");
-                                        driveProvider.changeToken("");
-                                        driveProvider.changeUsername("anonymous");
-                                        driveProvider.changeHandshake("");
-                                        Storage.removeData("username").then(
-                                          (_) => Storage.removeData("handshake").then(
-                                            (_) => Storage.removeData("token").then(
-                                              (_) => Storage.removeData("token_timestamp").then((_) {}),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
-                                icon: const Icon(Icons.logout)),
                           ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //Reans
+              Container(
+                width: screenSize.width,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: screenSize.width < 1000 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+                  children: [
+                    //Reans Title
+                    Text(
+                      "Reans is a user-friendly remote server creation tool that allows you to create custom servers or use predefined ones for games and software.",
+                      maxLines: 99,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    //Reans Button
+                    SizedBox(
+                      width: 110,
+                      child: FittedBox(
+                        child: ElevatedButton(
+                          onPressed: null,
+                          child: Row(
+                            children: [
+                              Text(
+                                "Reans",
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(width: 5),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: SizedBox(
+                                  height: 40,
+                                  width: 24,
+                                  child: Image.asset("assets/larita/icon.png", fit: BoxFit.cover),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -250,13 +257,16 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 10),
                     //Larita Button
                     SizedBox(
-                      width: 110,
+                      width: 230,
                       child: FittedBox(
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, "larita"),
+                          onPressed: null,
                           child: Row(
                             children: [
-                              const Text("Larita"),
+                              Text(
+                                "Larita (Under Maintence)",
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
                               const SizedBox(width: 5),
                               Padding(
                                 padding: const EdgeInsets.all(2.0),
