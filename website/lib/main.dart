@@ -150,7 +150,7 @@ class HomeScreen extends StatelessWidget {
                                   SizedBox(
                                     height: 24,
                                     width: 24,
-                                    child: Image.asset("assets/drive/icon.png"),
+                                    child: Image.asset("assets/drive.png"),
                                   ),
                                 ],
                               ),
@@ -177,7 +177,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     //Reans Button
-                    SizedBox(
+                    SizedBox( 
                       width: 110,
                       child: FittedBox(
                         child: ElevatedButton(
@@ -194,7 +194,7 @@ class HomeScreen extends StatelessWidget {
                                 child: SizedBox(
                                   height: 40,
                                   width: 24,
-                                  child: Image.asset("assets/larita/icon.png", fit: BoxFit.cover),
+                                  child: Image.asset("assets/rens.png", fit: BoxFit.fitWidth),
                                 ),
                               ),
                             ],
@@ -232,7 +232,7 @@ class HomeScreen extends StatelessWidget {
                               SizedBox(
                                 height: 24,
                                 width: 24,
-                                child: Image.asset("assets/protify/icon.png"),
+                                child: Image.asset("assets/protify.png"),
                               ),
                             ],
                           ),
@@ -273,7 +273,7 @@ class HomeScreen extends StatelessWidget {
                                 child: SizedBox(
                                   height: 40,
                                   width: 24,
-                                  child: Image.asset("assets/larita/icon.png", fit: BoxFit.cover),
+                                  child: Image.asset("assets/larita.png", fit: BoxFit.cover),
                                 ),
                               ),
                             ],

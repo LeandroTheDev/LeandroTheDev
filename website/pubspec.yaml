@@ -19,5 +19,5 @@ dev_dependencies:
 flutter:
   assets:
     # Drive
-    - assets/drive/
+    - assets/
   uses-material-design: true
