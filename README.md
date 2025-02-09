@@ -19,6 +19,7 @@ Take a time and see my [portfolio](http://leandrothedev.duckdns.org)
 - Lua
 - C#
 - Dart
+- Solidity
 
 ### Frameworks
 - Flutter
@@ -28,6 +29,7 @@ Take a time and see my [portfolio](http://leandrothedev.duckdns.org)
 - Node.js
 - Maui
 - Dotnet
+- Remix
 
 ### Areas
 - Software Development
